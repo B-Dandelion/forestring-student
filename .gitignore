@@ -49,3 +49,7 @@ env/dev.json
 
 # Local Android native build artifacts
 .cxx/
+
+
+# Local QA environment config
+env/staging.json
