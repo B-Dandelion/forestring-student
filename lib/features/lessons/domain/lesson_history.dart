@@ -46,6 +46,7 @@ class SemesterLessonHistory {
     required this.startsOn,
     required this.endsOn,
     required this.rights,
+    this.cancellationQuota,
   });
 
   final String id;
@@ -53,6 +54,7 @@ class SemesterLessonHistory {
   final DateTime startsOn;
   final DateTime endsOn;
   final List<LessonRightHistory> rights;
+  final CancellationQuotaSummary? cancellationQuota;
 
   int get totalRights => rights.length;
   int get reservedRights =>
@@ -67,6 +69,41 @@ class SemesterLessonHistory {
       );
 }
 
+class CancellationQuotaSummary {
+  const CancellationQuotaSummary({
+    required this.semesterId,
+    required this.studentType,
+    required this.cancellationLimit,
+    required this.countedCancellations,
+    required this.remainingCancellations,
+    this.buckets = const [],
+  });
+
+  final String semesterId;
+  final String studentType;
+  final int cancellationLimit;
+  final int countedCancellations;
+  final int remainingCancellations;
+  final List<Map<String, dynamic>> buckets;
+
+  factory CancellationQuotaSummary.fromJson(Map<String, dynamic> json) {
+    final rawBuckets = json['buckets'];
+    return CancellationQuotaSummary(
+      semesterId: json['semester_id'].toString(),
+      studentType: json['student_type'].toString(),
+      cancellationLimit: json['cancellation_limit'] as int? ?? 0,
+      countedCancellations: json['counted_cancellations'] as int? ?? 0,
+      remainingCancellations: json['remaining_cancellations'] as int? ?? 0,
+      buckets: rawBuckets is List
+          ? rawBuckets
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList()
+          : const [],
+    );
+  }
+}
+
 class LessonRightHistory {
   const LessonRightHistory({
     required this.id,
@@ -75,6 +112,7 @@ class LessonRightHistory {
     required this.sequenceNo,
     required this.durationMinutes,
     required this.cancellations,
+    this.activities = const [],
     this.reservedAt,
     this.lesson,
   });
@@ -87,6 +125,7 @@ class LessonRightHistory {
   final DateTime? reservedAt;
   final Lesson? lesson;
   final List<LessonCancellationHistory> cancellations;
+  final List<LessonActivityHistory> activities;
 
   int get cancellationCount => cancellations.length;
   int get studentCancellationCount =>
@@ -153,6 +192,82 @@ class LessonRightHistory {
       'carryover' => '보강 수업권',
       _ => '수강권',
     };
+  }
+}
+
+class LessonActivityHistory {
+  const LessonActivityHistory({
+    required this.lessonRightId,
+    required this.eventType,
+    required this.eventAt,
+    required this.details,
+    this.actorId,
+    this.actorName,
+    this.actorRole,
+  });
+
+  final String lessonRightId;
+  final String eventType;
+  final DateTime eventAt;
+  final String? actorId;
+  final String? actorName;
+  final String? actorRole;
+  final Map<String, dynamic> details;
+
+  factory LessonActivityHistory.fromJson(Map<String, dynamic> json) {
+    final rawDetails = json['details'];
+    return LessonActivityHistory(
+      lessonRightId: json['lesson_right_id'].toString(),
+      eventType: json['event_type'].toString(),
+      eventAt: DateTime.parse(json['event_at'].toString()).toLocal(),
+      actorId: json['actor_id']?.toString(),
+      actorName: json['actor_name']?.toString(),
+      actorRole: json['actor_role']?.toString(),
+      details: rawDetails is Map
+          ? Map<String, dynamic>.from(rawDetails)
+          : const {},
+    );
+  }
+
+  bool get isOriginalSchedule => eventType == 'LESSON_ORIGINAL_SCHEDULE';
+  bool get isCancellation => eventType == 'LESSON_CANCELED';
+  bool get isBooking => eventType == 'LESSON_RIGHT_BOOKED';
+  bool get isManualUpdate => eventType == 'LESSON_MANUALLY_UPDATED';
+  bool get isMakeupCreated => eventType == 'MAKEUP_LESSON_CREATED';
+
+  bool get isRebooking =>
+      isBooking &&
+      (details['reusedLesson'] == true ||
+          details['regularRebooking'] == true);
+
+  DateTime? get startsAt => _parseDate(details['startsAt']);
+  DateTime? get endsAt => _parseDate(details['endsAt']);
+
+  String actorLabel(String studentId) {
+    if (actorId != null && actorId == studentId) {
+      return '본인';
+    }
+
+    final name = actorName?.trim();
+    final roleLabel = switch (actorRole) {
+      'master' => '전체 관리자',
+      'manager' => '지점장',
+      'teacher' => '선생님',
+      'student' => '수강생',
+      _ => '시스템',
+    };
+
+    if (name == null || name.isEmpty) {
+      return roleLabel;
+    }
+    return '$name · $roleLabel';
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    return DateTime.tryParse(value.toString())?.toLocal();
   }
 }
 
