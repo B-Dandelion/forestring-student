@@ -60,10 +60,59 @@ class _StudentMyPageState extends State<StudentMyPage> {
     );
   }
 
+  void _showNotificationNotice() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('알림 기능은 준비 중입니다.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const StudentAppBar(title: '마이페이지'),
+      backgroundColor: const Color(0xffF8F6F0),
+      appBar: AppBar(
+        backgroundColor: const Color(0xffF8F6F0),
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          '마이페이지',
+          style: forestringTextStyle.copyWith(
+            color: primaryColor,
+            fontSize: 21,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        actions: [
+          IconButton(
+            tooltip: '알림',
+            onPressed: _showNotificationNotice,
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_none_rounded),
+                Positioned(
+                  top: 1,
+                  right: 0,
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
+      ),
       drawer: StudentDrawer(
         displayName: widget.profile.displayName,
         onHome: _goHome,
@@ -111,38 +160,23 @@ class _StudentMyPageState extends State<StudentMyPage> {
             return RefreshIndicator(
               onRefresh: _reload,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
                 children: [
-                  Text(
-                    '${widget.profile.displayName}님의 수강 내역',
-                    style: forestringTextStyle.copyWith(
-                      color: primaryColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: _pill(
-                      history.studentTypeLabel,
-                      primaryColor.withValues(alpha: 0.10),
-                      primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  _sectionTitle('이번 학기'),
-                  const SizedBox(height: 10),
+                  _profileHeader(history),
+                  const SizedBox(height: 18),
                   if (current == null)
-                    _emptyCard('이번 학기 수강 내역이 없습니다.')
-                  else ...[
-                    _semesterSummary(history, current),
-                    const SizedBox(height: 16),
-                    _sectionTitle('수업 내역', small: true),
-                    const SizedBox(height: 8),
+                    _emptyCurrentSemesterCard()
+                  else
+                    _semesterHero(history, current),
+                  const SizedBox(height: 16),
+                  _nextLessonCard(history),
+                  const SizedBox(height: 26),
+                  if (current != null) ...[
+                    _sectionTitle('이번 학기 수업 내역'),
+                    const SizedBox(height: 10),
                     ..._timeline(history, current),
+                    const SizedBox(height: 26),
                   ],
-                  const SizedBox(height: 28),
                   _sectionTitle('지난 학기'),
                   const SizedBox(height: 10),
                   if (past.isEmpty)
@@ -156,6 +190,485 @@ class _StudentMyPageState extends State<StudentMyPage> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _profileHeader(LessonHistoryData history) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 68,
+          height: 68,
+          decoration: BoxDecoration(
+            color: const Color(0xffE7EFE4),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: primaryColor.withValues(alpha: 0.08),
+            ),
+          ),
+          child: const Icon(
+            Icons.eco_rounded,
+            color: primaryColor,
+            size: 34,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      '${widget.profile.displayName}님',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: forestringTextStyle.copyWith(
+                        color: Colors.black87,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _pill(
+                    history.studentTypeLabel,
+                    primaryColor.withValues(alpha: 0.10),
+                    primaryColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              Text(
+                '오늘도, 좋은 음악과 함께',
+                style: forestringTextStyle.copyWith(
+                  color: Colors.black54,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _emptyCurrentSemesterCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            primaryColor,
+            Color(0xff315E45),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Text(
+        '현재 진행 중인 학기가 없습니다.',
+        style: forestringTextStyle.copyWith(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  _SemesterMetrics _semesterMetrics(
+    LessonHistoryData history,
+    SemesterLessonHistory semester,
+  ) {
+    final baseRights = semester.rights
+        .where(
+          (right) => history.isRegular
+              ? right.origin == 'regular_base'
+              : right.origin == 'flex_base',
+        )
+        .toList();
+
+    final baseCount = baseRights.length;
+    final carryoverCount = semester.rights
+        .where((right) => right.origin == 'carryover')
+        .length;
+    final countedStudentCancellations = baseRights.fold<int>(
+      0,
+      (sum, right) =>
+          sum +
+          right.cancellations
+              .where(
+                (event) =>
+                    event.origin == 'student' && event.countsTowardLimit,
+              )
+              .length,
+    );
+    final cancellationLimit = (baseCount ~/ 4) * 2;
+    final remainingCancellations =
+        cancellationLimit > countedStudentCancellations
+            ? cancellationLimit - countedStudentCancellations
+            : 0;
+    final availableCount = semester.rights
+        .where((right) => right.status == 'available')
+        .length;
+
+    return _SemesterMetrics(
+      baseCount: baseCount,
+      availableCount: availableCount,
+      reservedCount: semester.reservedRights,
+      remainingCancellations: remainingCancellations,
+      carryoverCount: carryoverCount,
+    );
+  }
+
+  Widget _semesterHero(
+    LessonHistoryData history,
+    SemesterLessonHistory semester,
+  ) {
+    final metrics = _semesterMetrics(history, semester);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            primaryColor,
+            Color(0xff315E45),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withValues(alpha: 0.14),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -18,
+              top: -18,
+              child: Icon(
+                Icons.music_note_rounded,
+                color: Colors.white.withValues(alpha: 0.08),
+                size: 150,
+              ),
+            ),
+            Positioned(
+              right: 24,
+              top: 24,
+              child: Icon(
+                Icons.eco_rounded,
+                color: Colors.white.withValues(alpha: 0.20),
+                size: 32,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '이번 학기',
+                    style: forestringTextStyle.copyWith(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    _semesterShortTitle(semester.code),
+                    style: forestringTextStyle.copyWith(
+                      color: Colors.white,
+                      fontSize: 29,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '${DateFormat('yyyy.MM.dd').format(semester.startsOn)} '
+                    '~ ${DateFormat('yyyy.MM.dd').format(semester.endsOn)}',
+                    style: forestringTextStyle.copyWith(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                  if (history.isFlex) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      '기본 수업권 ${metrics.baseCount}개',
+                      style: forestringTextStyle.copyWith(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFAF9F4),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _metricCell(
+                                icon: Icons.calendar_month_rounded,
+                                label: '예약된 수업',
+                                value: '${metrics.reservedCount}회',
+                              ),
+                            ),
+                            _metricDivider(),
+                            Expanded(
+                              child: _metricCell(
+                                icon: Icons.confirmation_number_outlined,
+                                label: '남은 수업권',
+                                value: '${metrics.availableCount}개',
+                              ),
+                            ),
+                          ],
+                        ),
+                        Divider(
+                          height: 22,
+                          color: primaryColor.withValues(alpha: 0.10),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _metricCell(
+                                icon: Icons.cancel_outlined,
+                                label: '학생 취소 가능',
+                                value:
+                                    '${metrics.remainingCancellations}회',
+                              ),
+                            ),
+                            _metricDivider(),
+                            Expanded(
+                              child: _metricCell(
+                                icon: Icons.school_outlined,
+                                label: '보강 수업권',
+                                value: metrics.carryoverCount == 0
+                                    ? '없음'
+                                    : '${metrics.carryoverCount}개',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _metricDivider() {
+    return Container(
+      width: 1,
+      height: 56,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: primaryColor.withValues(alpha: 0.10),
+    );
+  }
+
+  Widget _metricCell({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: Color(0xffE7EFE4),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: primaryColor,
+            size: 21,
+          ),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: forestringTextStyle.copyWith(
+                  color: Colors.black54,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: forestringTextStyle.copyWith(
+                  color: Colors.black87,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  LessonRightHistory? _nextLessonRight(LessonHistoryData history) {
+    final now = DateTime.now();
+    final candidates = <LessonRightHistory>[];
+
+    for (final semester in history.semesters) {
+      for (final right in semester.rights) {
+        final lesson = right.lesson;
+        if (lesson == null ||
+            lesson.isCanceled ||
+            !lesson.endsAt.isAfter(now)) {
+          continue;
+        }
+        candidates.add(right);
+      }
+    }
+
+    candidates.sort(
+      (a, b) => a.lesson!.startsAt.compareTo(b.lesson!.startsAt),
+    );
+    return candidates.isEmpty ? null : candidates.first;
+  }
+
+  Widget _nextLessonCard(LessonHistoryData history) {
+    final right = _nextLessonRight(history);
+    final lesson = right?.lesson;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xffF1F6EE),
+            Color(0xffFBF8EE),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.08),
+        ),
+      ),
+      child: lesson == null
+          ? Row(
+              children: [
+                _nextLessonIcon(),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    '예정된 다음 수업이 없습니다.',
+                    style: forestringTextStyle.copyWith(
+                      color: Colors.black54,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '다음 수업',
+                        style: forestringTextStyle.copyWith(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        DateFormat('M월 d일 EEEE', 'ko_KR')
+                            .format(lesson.startsAt),
+                        style: forestringTextStyle.copyWith(
+                          color: Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        DateFormat('HH:mm').format(lesson.startsAt),
+                        style: forestringTextStyle.copyWith(
+                          color: primaryColor,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '${lesson.teacherName ?? '담당 선생님'} 선생님'
+                        ' · ${lesson.displayTypeLabel}',
+                        style: forestringTextStyle.copyWith(
+                          color: Colors.black54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 14),
+                _nextLessonIcon(),
+              ],
+            ),
+    );
+  }
+
+  Widget _nextLessonIcon() {
+    return Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.08),
+        ),
+      ),
+      child: const Icon(
+        Icons.event_available_rounded,
+        color: primaryColor,
+        size: 30,
       ),
     );
   }
@@ -665,6 +1178,17 @@ class _StudentMyPageState extends State<StudentMyPage> {
     );
   }
 
+  String _semesterShortTitle(String code) {
+    final parts = code.split('-');
+    if (parts.length == 2) {
+      final month = int.tryParse(parts[1]);
+      if (month != null) {
+        return '$month월 학기';
+      }
+    }
+    return '$code 학기';
+  }
+
   String _semesterTitle(String code) {
     final parts = code.split('-');
     if (parts.length == 2) {
@@ -675,4 +1199,21 @@ class _StudentMyPageState extends State<StudentMyPage> {
     }
     return '$code 학기';
   }
+}
+
+
+class _SemesterMetrics {
+  const _SemesterMetrics({
+    required this.baseCount,
+    required this.availableCount,
+    required this.reservedCount,
+    required this.remainingCancellations,
+    required this.carryoverCount,
+  });
+
+  final int baseCount;
+  final int availableCount;
+  final int reservedCount;
+  final int remainingCancellations;
+  final int carryoverCount;
 }
