@@ -3,12 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/forestring_theme.dart';
-import '../../../core/widgets/student_navigation.dart';
 import '../../auth/domain/current_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../domain/lesson_history.dart';
 import 'lesson_controller.dart';
-import 'reschedule_page.dart';
 
 class StudentMyPage extends StatefulWidget {
   const StudentMyPage({
@@ -23,41 +21,25 @@ class StudentMyPage extends StatefulWidget {
 }
 
 class _StudentMyPageState extends State<StudentMyPage> {
-  late Future<LessonHistoryData> _historyFuture;
-  bool _initialized = false;
+  bool _requestedHistory = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_initialized) {
+    if (_requestedHistory) {
       return;
     }
-    _initialized = true;
-    _historyFuture = context.read<LessonController>().fetchLessonHistory();
-  }
 
-  Future<void> _reload() async {
-    setState(() {
-      _historyFuture = context.read<LessonController>().fetchLessonHistory();
+    _requestedHistory = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<LessonController>().ensureHistoryLoaded();
+      }
     });
-    await _historyFuture;
   }
 
-  void _goHome() {
-    Navigator.of(context).pop();
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
-  void _goReschedule() {
-    Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider.value(
-          value: context.read<LessonController>(),
-          child: ReschedulePage(profile: widget.profile),
-        ),
-      ),
-    );
+  Future<void> _reload() {
+    return context.read<LessonController>().refreshAll(forceHistory: true);
   }
 
   void _showNotificationNotice() {
@@ -69,8 +51,60 @@ class _StudentMyPageState extends State<StudentMyPage> {
     );
   }
 
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(
+              '로그아웃',
+              style: forestringTextStyle.copyWith(
+                color: primaryColor,
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            content: Text(
+              '로그아웃하시겠습니까?',
+              style: forestringTextStyle.copyWith(fontSize: 15),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  '아니요',
+                  style: forestringTextStyle.copyWith(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(
+                  '로그아웃',
+                  style: forestringTextStyle.copyWith(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    await context.read<AuthController>().signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<LessonController>();
+    final history = controller.history;
+
     return Scaffold(
       backgroundColor: const Color(0xffF8F6F0),
       appBar: AppBar(
@@ -96,82 +130,89 @@ class _StudentMyPageState extends State<StudentMyPage> {
           const SizedBox(width: 6),
         ],
       ),
-      drawer: StudentDrawer(
-        displayName: widget.profile.displayName,
-        onHome: _goHome,
-        onReschedule: _goReschedule,
-        onMyPage: () => Navigator.of(context).pop(),
-        onLogout: () async {
-          Navigator.of(context).pop();
-          await context.read<AuthController>().signOut();
-          if (context.mounted) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          }
-        },
-      ),
       body: SafeArea(
-        child: FutureBuilder<LessonHistoryData>(
-          future: _historyFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError || snapshot.data == null) {
-              return RefreshIndicator(
+        child: history == null
+            ? controller.historyErrorMessage == null
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: _reload,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(24),
+                      children: [
+                        const SizedBox(height: 120),
+                        Text(
+                          controller.historyErrorMessage!,
+                          textAlign: TextAlign.center,
+                          style: forestringTextStyle.copyWith(
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+            : RefreshIndicator(
                 onRefresh: _reload,
-                child: ListView(
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    const SizedBox(height: 120),
-                    Text(
-                      snapshot.error?.toString() ?? '수강 내역을 불러오지 못했습니다.',
-                      textAlign: TextAlign.center,
-                      style: forestringTextStyle.copyWith(
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ],
+                child: Builder(
+                  builder: (context) {
+                    final current = history.currentSemester;
+                    final past = history.pastSemesters;
+
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
+                      children: [
+                        _profileHeader(history),
+                        const SizedBox(height: 18),
+                        if (current == null)
+                          _emptyCurrentSemesterCard()
+                        else
+                          _semesterHero(history, current),
+                        const SizedBox(height: 16),
+                        _nextLessonCard(history),
+                        const SizedBox(height: 26),
+                        if (current != null) ...[
+                          _sectionTitle('이번 학기 수업 내역'),
+                          const SizedBox(height: 10),
+                          ..._timeline(history, current),
+                          const SizedBox(height: 26),
+                        ],
+                        _sectionTitle('지난 학기'),
+                        const SizedBox(height: 10),
+                        if (past.isEmpty)
+                          _emptyCard('지난 학기 수강 내역이 없습니다.')
+                        else
+                          ...past.map(
+                            (semester) => _pastTile(history, semester),
+                          ),
+                        const SizedBox(height: 30),
+                        _logoutButton(),
+                      ],
+                    );
+                  },
                 ),
-              );
-            }
-
-            final history = snapshot.data!;
-            final current = history.currentSemester;
-            final past = history.pastSemesters;
-
-            return RefreshIndicator(
-              onRefresh: _reload,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
-                children: [
-                  _profileHeader(history),
-                  const SizedBox(height: 18),
-                  if (current == null)
-                    _emptyCurrentSemesterCard()
-                  else
-                    _semesterHero(history, current),
-                  const SizedBox(height: 16),
-                  _nextLessonCard(history),
-                  const SizedBox(height: 26),
-                  if (current != null) ...[
-                    _sectionTitle('이번 학기 수업 내역'),
-                    const SizedBox(height: 10),
-                    ..._timeline(history, current),
-                    const SizedBox(height: 26),
-                  ],
-                  _sectionTitle('지난 학기'),
-                  const SizedBox(height: 10),
-                  if (past.isEmpty)
-                    _emptyCard('지난 학기 수강 내역이 없습니다.')
-                  else
-                    ...past.map(
-                      (semester) => _pastTile(history, semester),
-                    ),
-                ],
               ),
-            );
-          },
+      ),
+    );
+  }
+
+  Widget _logoutButton() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        onPressed: _confirmLogout,
+        icon: const Icon(
+          Icons.logout_rounded,
+          color: Colors.redAccent,
+          size: 20,
+        ),
+        label: Text(
+          '로그아웃',
+          style: forestringTextStyle.copyWith(
+            color: Colors.redAccent,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
