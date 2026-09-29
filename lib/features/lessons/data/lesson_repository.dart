@@ -170,6 +170,21 @@ class LessonRepository {
           .from('semesters')
           .select('id, code, starts_on, ends_on');
 
+      final activityRows = await _client.rpc(
+        'get_student_lesson_activity',
+        params: {
+          'p_student_id': user.id,
+          'p_right_id': null,
+        },
+      );
+
+      final quotaRows = await _client.rpc(
+        'get_student_cancellation_quotas',
+        params: {
+          'p_student_id': user.id,
+        },
+      );
+
       List<dynamic> overrideRows = const [];
       try {
         overrideRows = await _client
@@ -205,6 +220,27 @@ class LessonRepository {
             );
       }
 
+      final activitiesByRight = <String, List<LessonActivityHistory>>{};
+      for (final raw in activityRows as List) {
+        final activity = LessonActivityHistory.fromJson(
+          Map<String, dynamic>.from(raw as Map),
+        );
+        activitiesByRight
+            .putIfAbsent(activity.lessonRightId, () => [])
+            .add(activity);
+      }
+      for (final activities in activitiesByRight.values) {
+        activities.sort((a, b) => a.eventAt.compareTo(b.eventAt));
+      }
+
+      final quotasBySemester = <String, CancellationQuotaSummary>{};
+      for (final raw in quotaRows as List) {
+        final quota = CancellationQuotaSummary.fromJson(
+          Map<String, dynamic>.from(raw as Map),
+        );
+        quotasBySemester[quota.semesterId] = quota;
+      }
+
       final semestersById = <String, Map<String, dynamic>>{
         for (final raw in semesterRows as List)
           (raw as Map)['id'] as String: Map<String, dynamic>.from(raw),
@@ -238,6 +274,7 @@ class LessonRepository {
                     : DateTime.parse(row['reserved_at'].toString()).toLocal(),
                 lesson: lessonsByRight[rightId],
                 cancellations: cancellationsByRight[rightId] ?? const [],
+                activities: activitiesByRight[rightId] ?? const [],
               ),
             );
       }
@@ -271,6 +308,7 @@ class LessonRepository {
             startsOn: startsOn,
             endsOn: endsOn,
             rights: rights,
+            cancellationQuota: quotasBySemester[entry.key],
           ),
         );
       }
