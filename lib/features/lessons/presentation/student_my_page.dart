@@ -185,7 +185,12 @@ class _StudentMyPageState extends State<StudentMyPage> {
                           ...past.map(
                             (semester) => _pastTile(history, semester),
                           ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 22),
+                        Divider(
+                          height: 1,
+                          color: Colors.black.withValues(alpha: 0.10),
+                        ),
+                        const SizedBox(height: 10),
                         _logoutButton(),
                       ],
                     );
@@ -471,7 +476,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
                             Expanded(
                               child: _metricCell(
                                 icon: Icons.cancel_outlined,
-                                label: '학생 취소 가능',
+                                label: '취소 가능 횟수',
                                 value:
                                     '${metrics.remainingCancellations}회',
                               ),
