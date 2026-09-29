@@ -1096,6 +1096,47 @@ class _ReschedulePageState extends State<ReschedulePage>
                                         ),
                                       );
                                     },
+                                    defaultBuilder:
+                                        (context, day, focusedDay) {
+                                      final color =
+                                          day.weekday == DateTime.sunday
+                                              ? Colors.redAccent
+                                              : day.weekday ==
+                                                      DateTime.saturday
+                                                  ? Colors.blueAccent
+                                                  : Colors.black87;
+                                      return Center(
+                                        child: Text(
+                                          '${day.day}',
+                                          style: forestringTextStyle.copyWith(
+                                            color: color,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    outsideBuilder:
+                                        (context, day, focusedDay) {
+                                      final color =
+                                          day.weekday == DateTime.sunday
+                                              ? Colors.redAccent.withValues(
+                                                  alpha: 0.38,
+                                                )
+                                              : day.weekday ==
+                                                      DateTime.saturday
+                                                  ? Colors.blueAccent
+                                                      .withValues(alpha: 0.38)
+                                                  : Colors.black26;
+                                      return Center(
+                                        child: Text(
+                                          '${day.day}',
+                                          style: forestringTextStyle.copyWith(
+                                            color: color,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
