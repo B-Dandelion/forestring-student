@@ -6,7 +6,7 @@ import '../features/auth/presentation/login_page.dart';
 import '../features/lessons/data/lesson_repository.dart';
 import '../features/lessons/data/review_lesson_repository.dart';
 import '../features/lessons/presentation/lesson_controller.dart';
-import '../features/lessons/presentation/student_home_page.dart';
+import 'student_shell.dart';
 
 class AppGate extends StatelessWidget {
   const AppGate({
@@ -35,7 +35,7 @@ class AppGate extends StatelessWidget {
 
     return ChangeNotifierProvider(
       create: (_) => LessonController(repository)..initialize(),
-      child: StudentHomePage(
+      child: StudentShell(
         profile: profile,
       ),
     );
