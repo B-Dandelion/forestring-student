@@ -5,7 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../../core/theme/forestring_theme.dart';
 import '../../../core/widgets/student_navigation.dart';
-import '../../auth/domain/current_profile.dart';
 import '../domain/lesson.dart';
 import '../domain/lesson_history.dart';
 import 'lesson_controller.dart';
@@ -13,11 +12,9 @@ import 'lesson_controller.dart';
 class ReschedulePage extends StatefulWidget {
   const ReschedulePage({
     super.key,
-    required this.profile,
     this.refreshSignal = 0,
   });
 
-  final CurrentProfile profile;
   final int refreshSignal;
 
   @override
