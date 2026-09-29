@@ -935,6 +935,9 @@ class _StudentMyPageState extends State<StudentMyPage> {
     final scheduleText = _activityScheduleText(activity);
     final actorText = activity.actorRoleLabel(history.studentId);
     final actionTime = DateFormat('M월 d일 HH:mm').format(activity.eventAt);
+    final metadata = actorText == null
+        ? actionTime
+        : '$actorText · $actionTime';
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -989,7 +992,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
                 ],
                 const SizedBox(height: 2),
                 Text(
-                  '$actorText · $actionTime',
+                  metadata,
                   style: forestringTextStyle.copyWith(
                     color: Colors.black38,
                     fontSize: 10,
