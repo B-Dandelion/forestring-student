@@ -243,7 +243,7 @@ class LessonActivityHistory {
   DateTime? get startsAt => _parseDate(details['startsAt']);
   DateTime? get endsAt => _parseDate(details['endsAt']);
 
-  String actorRoleLabel(String studentId) {
+  String? actorRoleLabel(String studentId) {
     if (actorId != null && actorId == studentId) {
       return '본인';
     }
@@ -252,7 +252,7 @@ class LessonActivityHistory {
       'master' => '전체 관리자',
       'manager' || 'teacher' => '지점 관리자',
       'student' => '본인',
-      _ => '전체 관리자',
+      _ => null,
     };
   }
 
