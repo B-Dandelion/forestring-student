@@ -6,19 +6,19 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../core/theme/forestring_theme.dart';
 import '../../../core/widgets/student_navigation.dart';
 import '../../auth/domain/current_profile.dart';
-import '../../auth/presentation/auth_controller.dart';
 import '../domain/lesson.dart';
 import '../domain/lesson_history.dart';
 import 'lesson_controller.dart';
-import 'student_my_page.dart';
 
 class ReschedulePage extends StatefulWidget {
   const ReschedulePage({
     super.key,
     required this.profile,
+    this.refreshSignal = 0,
   });
 
   final CurrentProfile profile;
+  final int refreshSignal;
 
   @override
   State<ReschedulePage> createState() => _ReschedulePageState();
@@ -40,6 +40,20 @@ class _ReschedulePageState extends State<ReschedulePage> {
   String? _errorMessage;
   bool _initialized = false;
   int _loadToken = 0;
+
+  @override
+  void didUpdateWidget(covariant ReschedulePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_initialized || oldWidget.refreshSignal == widget.refreshSignal) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadBookingRights();
+      }
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -117,7 +131,7 @@ class _ReschedulePageState extends State<ReschedulePage> {
   }
 
   Future<void> _refresh() async {
-    await context.read<LessonController>().reload();
+    await context.read<LessonController>().refreshAll();
     if (mounted) {
       await _loadBookingRights();
     }
@@ -449,33 +463,7 @@ class _ReschedulePageState extends State<ReschedulePage> {
     }
 
     return Scaffold(
-      appBar: const StudentAppBar(title: '수업 예약·변경'),
-      drawer: StudentDrawer(
-        displayName: widget.profile.displayName,
-        onHome: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).maybePop();
-        },
-        onReschedule: () => Navigator.of(context).pop(),
-        onMyPage: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ChangeNotifierProvider.value(
-                value: context.read<LessonController>(),
-                child: StudentMyPage(profile: widget.profile),
-              ),
-            ),
-          );
-        },
-        onLogout: () async {
-          Navigator.of(context).pop();
-          await context.read<AuthController>().signOut();
-          if (context.mounted) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          }
-        },
-      ),
+      appBar: const StudentAppBar(title: '수업 예약'),
       body: SafeArea(
         child: _loadingRights && rights.isEmpty
             ? const Center(child: CircularProgressIndicator())
