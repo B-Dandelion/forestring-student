@@ -212,7 +212,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
                       style: forestringTextStyle.copyWith(
                         color: Colors.black87,
                         fontSize: 24,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -223,14 +223,6 @@ class _StudentMyPageState extends State<StudentMyPage> {
                     primaryColor,
                   ),
                 ],
-              ),
-              const SizedBox(height: 7),
-              Text(
-                '오늘도, 좋은 음악과 함께',
-                style: forestringTextStyle.copyWith(
-                  color: Colors.black54,
-                  fontSize: 13,
-                ),
               ),
             ],
           ),
@@ -375,7 +367,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
                     style: forestringTextStyle.copyWith(
                       color: Colors.white,
                       fontSize: 29,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 5),
