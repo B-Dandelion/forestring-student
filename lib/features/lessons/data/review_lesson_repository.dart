@@ -106,6 +106,17 @@ class ReviewLessonRepository extends LessonRepository {
   }
 
   @override
+  Future<DateTime?> fetchEnrollmentStartDate() async {
+    if (_semesters.isEmpty) {
+      return null;
+    }
+
+    final sorted = [..._semesters]
+      ..sort((a, b) => a.startsOn.compareTo(b.startsOn));
+    return sorted.first.startsOn;
+  }
+
+  @override
   Future<List<Lesson>> fetchMyLessons({
     required DateTime from,
     required DateTime to,
