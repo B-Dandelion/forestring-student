@@ -129,7 +129,6 @@ class _ReschedulePageState extends State<ReschedulePage>
       duration: duration,
       curve: Curves.easeInOutCubic,
       alignment: alignment,
-      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
     );
   }
 
@@ -1026,10 +1025,10 @@ class _ReschedulePageState extends State<ReschedulePage>
                                     });
                                     _bringIntoView(
                                       _timeSectionKey,
-                                      delay: const Duration(milliseconds: 180),
+                                      delay: const Duration(milliseconds: 220),
                                       duration:
-                                          const Duration(milliseconds: 420),
-                                      alignment: 0.68,
+                                          const Duration(milliseconds: 500),
+                                      alignment: 0.38,
                                     );
                                     _loadOptions(selectedRight, selectedDay);
                                   },
