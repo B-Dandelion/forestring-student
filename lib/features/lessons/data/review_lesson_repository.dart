@@ -406,8 +406,9 @@ class ReviewLessonRepository extends LessonRepository {
             studentType: 'regular',
             cancellationLimit: 2,
             countedCancellations: countedCancellations,
-            remainingCancellations:
-                (2 - countedCancellations).clamp(0, 2),
+            remainingCancellations: countedCancellations >= 2
+                ? 0
+                : 2 - countedCancellations,
           ),
         ),
       );
