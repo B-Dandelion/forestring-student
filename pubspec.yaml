@@ -1,7 +1,7 @@
 name: forestring_stu
 description: "실제 운영 중인 포레스트링 학생·보호자용 수업 일정 관리 앱."
 publish_to: 'none'
-version: 3.0.3+15
+version: 3.1.0+15
 
 environment:
   sdk: ^3.5.1
