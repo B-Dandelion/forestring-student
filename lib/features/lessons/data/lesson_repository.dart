@@ -19,6 +19,32 @@ class LessonRepository {
 
   final SupabaseClient _client;
 
+  Future<DateTime?> fetchEnrollmentStartDate() async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const LessonFailure('로그인이 필요합니다.');
+    }
+
+    try {
+      final rows = await _client
+          .from('student_enrollment_periods')
+          .select('starts_on')
+          .eq('student_id', user.id)
+          .order('starts_on')
+          .limit(1);
+
+      final list = rows as List;
+      if (list.isEmpty) {
+        return null;
+      }
+
+      final row = Map<String, dynamic>.from(list.first as Map);
+      return DateTime.parse(row['starts_on'].toString());
+    } on PostgrestException {
+      return null;
+    }
+  }
+
   Future<List<Lesson>> fetchMyLessons({
     required DateTime from,
     required DateTime to,
