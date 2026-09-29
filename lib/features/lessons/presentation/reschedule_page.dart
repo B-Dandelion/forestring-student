@@ -267,6 +267,83 @@ class _ReschedulePageState extends State<ReschedulePage> {
     await _loadBookingRights();
   }
 
+  String _formatBookingTime(DateTime value) {
+    var hour = value.hour % 12;
+    if (hour == 0) {
+      hour = 12;
+    }
+    return '$hour:${value.minute.toString().padLeft(2, '0')}';
+  }
+
+  Widget _timeGroup(
+    String label,
+    List<LessonBookingOption> options,
+    LessonRightHistory right,
+  ) {
+    if (options.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: forestringTextStyle.copyWith(
+              color: Colors.black87,
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisExtent: 58,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 10,
+            ),
+            itemCount: options.length,
+            itemBuilder: (context, index) {
+              final option = options[index];
+              return OutlinedButton(
+                onPressed: _booking
+                    ? null
+                    : () => _book(
+                          right,
+                          option,
+                        ),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  foregroundColor: Colors.black87,
+                  backgroundColor: Colors.white,
+                  disabledForegroundColor: Colors.black26,
+                  side: BorderSide(
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  _formatBookingTime(option.startsAt),
+                  style: forestringTextStyle.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   String _rightLabel(LessonRightHistory right) {
     final lesson = right.lesson;
     if (lesson != null && lesson.isCanceled) {
@@ -480,6 +557,7 @@ class _ReschedulePageState extends State<ReschedulePage> {
                         '${DateFormat('M월 d일').format(_selectedDate)} 예약 가능 시간',
                         style: forestringTextStyle.copyWith(
                           color: primaryColor,
+                          fontSize: 17,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -509,42 +587,35 @@ class _ReschedulePageState extends State<ReschedulePage> {
                                         ),
                                       ),
                                     )
-                                  : GridView.builder(
+                                  : ListView(
                                       padding: const EdgeInsets.fromLTRB(
-                                        12,
-                                        4,
-                                        12,
+                                        14,
+                                        8,
+                                        14,
                                         24,
                                       ),
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 4,
-                                        mainAxisExtent: 48,
-                                        mainAxisSpacing: 8,
-                                        crossAxisSpacing: 8,
-                                      ),
-                                      itemCount: _options.length,
-                                      itemBuilder: (context, index) {
-                                        final option = _options[index];
-                                        return OutlinedButton(
-                                          onPressed: _booking
-                                              ? null
-                                              : () => _book(
-                                                    selectedRight,
-                                                    option,
-                                                  ),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                          child: Text(
-                                            DateFormat('HH:mm')
-                                                .format(option.startsAt),
-                                            style: forestringTextStyle.copyWith(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        );
-                                      },
+                                      children: [
+                                        _timeGroup(
+                                          '오전',
+                                          _options
+                                              .where(
+                                                (option) =>
+                                                    option.startsAt.hour < 12,
+                                              )
+                                              .toList(),
+                                          selectedRight,
+                                        ),
+                                        _timeGroup(
+                                          '오후',
+                                          _options
+                                              .where(
+                                                (option) =>
+                                                    option.startsAt.hour >= 12,
+                                              )
+                                              .toList(),
+                                          selectedRight,
+                                        ),
+                                      ],
                                     ),
                     ),
                   ] else
