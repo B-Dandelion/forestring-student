@@ -7,6 +7,7 @@ import '../../auth/domain/current_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../domain/lesson_history.dart';
 import 'lesson_controller.dart';
+import 'widgets/lesson_card.dart';
 
 class StudentMyPage extends StatefulWidget {
   const StudentMyPage({
@@ -912,87 +913,54 @@ class _StudentMyPageState extends State<StudentMyPage> {
     final displayStart = staffChanged ? lesson.startsAt : originalStart;
     final displayEnd = staffChanged ? lesson.endsAt : originalEnd;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: canceled ? Colors.black.withValues(alpha: 0.035) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: canceled
-              ? Colors.black12
-              : primaryColor.withValues(alpha: 0.16),
+    Widget? footer;
+    if (cancellations.isNotEmpty) {
+      footer = Column(
+        children: List.generate(
+          cancellations.length,
+          (index) => _cancellationHistoryItem(
+            history,
+            right,
+            cancellations[index],
+            index,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: forestringTextStyle.copyWith(
-                    color: canceled ? Colors.black45 : Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (canceled)
-                _pill('취소됨', Colors.black12, Colors.black54)
-              else if (staffChanged)
-                _pill(
-                  '변경',
-                  secondaryColor.withValues(alpha: 0.12),
-                  secondaryColor,
-                ),
-            ],
+      );
+    } else if (staffChanged && lesson.updatedAt != null) {
+      footer = Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: secondaryColor.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          '학원 관리자 · '
+          '${DateFormat('M월 d일 HH:mm').format(lesson.updatedAt!)} 변경',
+          style: forestringTextStyle.copyWith(
+            color: secondaryColor,
+            fontSize: 11,
           ),
-          const SizedBox(height: 7),
-          Text(
-            '${DateFormat('M월 d일 HH:mm').format(displayStart)} ~ '
-            '${DateFormat('HH:mm').format(displayEnd)}',
-            style: forestringTextStyle.copyWith(
-              color: canceled ? Colors.black45 : Colors.black87,
-              fontSize: 14,
-              decoration: canceled ? TextDecoration.lineThrough : null,
-            ),
-          ),
-          if (lesson.teacherName != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${lesson.teacherName} 선생님',
-              style: forestringTextStyle.copyWith(
-                color: Colors.black54,
-                fontSize: 12,
-              ),
-            ),
-          ],
-          if (cancellations.isNotEmpty) ...[
-            const SizedBox(height: 9),
-            ...List.generate(
-              cancellations.length,
-              (index) => _cancellationHistoryItem(
-                history,
-                right,
-                cancellations[index],
-                index,
-              ),
-            ),
-          ] else if (staffChanged && lesson.updatedAt != null) ...[
-            const SizedBox(height: 9),
-            Text(
-              '학원 관리자 · '
-              '${DateFormat('M월 d일 HH:mm').format(lesson.updatedAt!)} 변경',
-              style: forestringTextStyle.copyWith(
-                color: secondaryColor,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ],
-      ),
+        ),
+      );
+    }
+
+    return StudentLessonHistoryCard(
+      title: title,
+      startsAt: displayStart,
+      endsAt: displayEnd,
+      teacherName: lesson.teacherName,
+      statusLabel: canceled
+          ? '취소됨'
+          : staffChanged
+              ? '변경'
+              : null,
+      statusColor: staffChanged ? secondaryColor : primaryColor,
+      isCanceled: canceled,
+      footer: footer,
     );
   }
 
@@ -1056,66 +1024,37 @@ class _StudentMyPageState extends State<StudentMyPage> {
     final lesson = right.lesson!;
     final reservedAt = right.reservedAt;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: secondaryColor.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: secondaryColor.withValues(alpha: 0.22),
+    Widget? footer;
+    if (reservedAt != null) {
+      footer = Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 8,
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '재예약 수업',
-                  style: forestringTextStyle.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              _pill(
-                '재예약',
-                secondaryColor.withValues(alpha: 0.14),
-                secondaryColor,
-              ),
-            ],
+        decoration: BoxDecoration(
+          color: secondaryColor.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          '${right.bookingActorLabel(history.studentId)} · '
+          '${DateFormat('M월 d일 HH:mm').format(reservedAt)} 재예약',
+          style: forestringTextStyle.copyWith(
+            color: secondaryColor,
+            fontSize: 11,
           ),
-          const SizedBox(height: 7),
-          Text(
-            '${DateFormat('M월 d일 HH:mm').format(lesson.startsAt)} ~ '
-            '${DateFormat('HH:mm').format(lesson.endsAt)}',
-            style: forestringTextStyle.copyWith(fontSize: 14),
-          ),
-          if (lesson.teacherName != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${lesson.teacherName} 선생님',
-              style: forestringTextStyle.copyWith(
-                color: Colors.black54,
-                fontSize: 12,
-              ),
-            ),
-          ],
-          if (reservedAt != null) ...[
-            const SizedBox(height: 9),
-            Text(
-              '${right.bookingActorLabel(history.studentId)} · '
-              '${DateFormat('M월 d일 HH:mm').format(reservedAt)} 재예약',
-              style: forestringTextStyle.copyWith(
-                color: secondaryColor,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ],
-      ),
+        ),
+      );
+    }
+
+    return StudentLessonHistoryCard(
+      title: '재예약 수업',
+      startsAt: lesson.startsAt,
+      endsAt: lesson.endsAt,
+      teacherName: lesson.teacherName,
+      statusLabel: '재예약',
+      statusColor: secondaryColor,
+      footer: footer,
     );
   }
 
