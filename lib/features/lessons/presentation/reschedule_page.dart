@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -36,6 +37,9 @@ class _ReschedulePageState extends State<ReschedulePage>
   bool _loadingWindow = false;
   bool _loadingOptions = false;
   bool _booking = false;
+  bool _showBookingSuccess = false;
+  LessonBookingOption? _lastBookedOption;
+  int _bookingSuccessToken = 0;
   String? _errorMessage;
   bool _initialized = false;
   int _loadToken = 0;
@@ -290,14 +294,29 @@ class _ReschedulePageState extends State<ReschedulePage>
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('수업이 예약되었습니다.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    final successToken = ++_bookingSuccessToken;
+    setState(() {
+      _showBookingSuccess = true;
+      _lastBookedOption = option;
+    });
+    await HapticFeedback.mediumImpact();
+
+    await Future<void>.delayed(const Duration(milliseconds: 850));
+    if (!mounted || successToken != _bookingSuccessToken) {
+      return;
+    }
 
     await _loadBookingRights();
+
+    await Future<void>.delayed(const Duration(milliseconds: 1800));
+    if (!mounted || successToken != _bookingSuccessToken) {
+      return;
+    }
+
+    setState(() {
+      _showBookingSuccess = false;
+      _lastBookedOption = null;
+    });
   }
 
   String _formatBookingTime(DateTime value) {
@@ -685,11 +704,13 @@ class _ReschedulePageState extends State<ReschedulePage>
             (right) => right.id == _selectedRightId,
             orElse: () => rights.first,
           );
-    final currentStep = _selectedOption != null
-        ? 3
-        : _hasSelectedDate
-            ? 2
-            : 1;
+    final currentStep = _showBookingSuccess
+        ? 4
+        : _selectedOption != null
+            ? 3
+            : _hasSelectedDate
+                ? 2
+                : 1;
 
     if (selectedRight != null &&
         _selectedRightId != selectedRight.id &&
@@ -755,6 +776,80 @@ class _ReschedulePageState extends State<ReschedulePage>
                         color: const Color(0xffF8F6F0),
                         padding: const EdgeInsets.only(bottom: 8),
                         child: _progressIndicator(currentStep),
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          final offset = Tween<Offset>(
+                            begin: const Offset(0, -0.18),
+                            end: Offset.zero,
+                          ).animate(animation);
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: offset,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: !_showBookingSuccess ||
+                                _lastBookedOption == null
+                            ? const SizedBox.shrink(
+                                key: ValueKey('booking-success-hidden'),
+                              )
+                            : Container(
+                                key: const ValueKey(
+                                  'booking-success-visible',
+                                ),
+                                width: double.infinity,
+                                margin: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  8,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 11,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xffE7EFE4),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: primaryColor.withValues(alpha: 0.12),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 28,
+                                      height: 28,
+                                      decoration: const BoxDecoration(
+                                        color: primaryColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.check_rounded,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        '${DateFormat('M월 d일 HH:mm').format(_lastBookedOption!.startsAt)} 수업 예약이 완료되었습니다.',
+                                        style: forestringTextStyle.copyWith(
+                                          color: primaryColor,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                       ),
                       Divider(
                         height: 1,
