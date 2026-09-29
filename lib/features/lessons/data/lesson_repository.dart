@@ -19,10 +19,31 @@ class LessonRepository {
 
   final SupabaseClient _client;
 
-  Future<DateTime?> fetchEnrollmentStartDate() async {
+  Future<DateTime?> fetchCalendarStartDate() async {
     final user = _client.auth.currentUser;
     if (user == null) {
       throw const LessonFailure('로그인이 필요합니다.');
+    }
+
+    DateTime? earliestLesson;
+    DateTime? enrollmentStart;
+
+    try {
+      final rows = await _client
+          .from('lessons')
+          .select('starts_at')
+          .eq('student_id', user.id)
+          .order('starts_at')
+          .limit(1);
+
+      final list = rows as List;
+      if (list.isNotEmpty) {
+        final row = Map<String, dynamic>.from(list.first as Map);
+        earliestLesson =
+            DateTime.parse(row['starts_at'].toString()).toLocal();
+      }
+    } on PostgrestException {
+      earliestLesson = null;
     }
 
     try {
@@ -34,15 +55,23 @@ class LessonRepository {
           .limit(1);
 
       final list = rows as List;
-      if (list.isEmpty) {
-        return null;
+      if (list.isNotEmpty) {
+        final row = Map<String, dynamic>.from(list.first as Map);
+        enrollmentStart = DateTime.parse(row['starts_on'].toString());
       }
-
-      final row = Map<String, dynamic>.from(list.first as Map);
-      return DateTime.parse(row['starts_on'].toString());
     } on PostgrestException {
-      return null;
+      enrollmentStart = null;
     }
+
+    if (earliestLesson == null) {
+      return enrollmentStart;
+    }
+    if (enrollmentStart == null) {
+      return earliestLesson;
+    }
+    return earliestLesson.isBefore(enrollmentStart)
+        ? earliestLesson
+        : enrollmentStart;
   }
 
   Future<List<Lesson>> fetchMyLessons({
