@@ -262,7 +262,7 @@ class _ReschedulePageState extends State<ReschedulePage>
     LessonRightHistory right,
     LessonBookingOption option,
   ) async {
-    if (_booking) {
+    if (_booking || _showBookingSuccess) {
       return;
     }
 
@@ -301,14 +301,14 @@ class _ReschedulePageState extends State<ReschedulePage>
     });
     await HapticFeedback.mediumImpact();
 
-    await Future<void>.delayed(const Duration(milliseconds: 850));
+    await Future<void>.delayed(const Duration(milliseconds: 2000));
     if (!mounted || successToken != _bookingSuccessToken) {
       return;
     }
 
     await _loadBookingRights();
 
-    await Future<void>.delayed(const Duration(milliseconds: 1800));
+    await Future<void>.delayed(const Duration(milliseconds: 900));
     if (!mounted || successToken != _bookingSuccessToken) {
       return;
     }
