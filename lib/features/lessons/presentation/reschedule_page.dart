@@ -406,7 +406,7 @@ class _ReschedulePageState extends State<ReschedulePage>
     const labels = ['날짜 선택', '시간 선택', '예약 확인'];
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 2),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: List<Widget>.generate(labels.length * 2 - 1, (index) {
           if (index.isOdd) {
