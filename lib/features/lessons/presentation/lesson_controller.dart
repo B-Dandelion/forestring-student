@@ -109,7 +109,7 @@ class LessonController extends ChangeNotifier {
 
     try {
       _history = await _repository.fetchMyLessonHistory();
-      _lessonsRefreshedAt = DateTime.now();
+      _historyRefreshedAt = DateTime.now();
     } on LessonFailure catch (error) {
       _historyErrorMessage = error.message;
     } catch (_) {
@@ -165,7 +165,7 @@ class LessonController extends ChangeNotifier {
       final history = await _repository.fetchMyLessonHistory();
       _history = history;
       _historyErrorMessage = null;
-      _lessonsRefreshedAt = DateTime.now();
+      _historyRefreshedAt = DateTime.now();
       notifyListeners();
 
       final semester = history.currentSemester;
