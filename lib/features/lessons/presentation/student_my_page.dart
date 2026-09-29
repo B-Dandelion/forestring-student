@@ -933,7 +933,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
             : primaryColor;
     final label = _activityLabel(activity);
     final scheduleText = _activityScheduleText(activity);
-    final actorText = activity.actorLabel(history.studentId);
+    final actorText = activity.actorRoleLabel(history.studentId);
     final actionTime = DateFormat('M월 d일 HH:mm').format(activity.eventAt);
 
     return Row(
@@ -1084,6 +1084,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
         side: BorderSide(color: primaryColor.withValues(alpha: 0.14)),
       ),
       child: ExpansionTile(
+        key: PageStorageKey<String>('past-semester-${semester.id}'),
         shape: const Border(),
         collapsedShape: const Border(),
         title: Text(
