@@ -130,18 +130,8 @@ Future<void> showStudentLessonDialog({
                             ),
                           ],
                         ),
+                        actionsAlignment: MainAxisAlignment.spaceBetween,
                         actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(confirmContext, false),
-                            child: Text(
-                              '아니요',
-                              style: forestringTextStyle.copyWith(
-                                color: primaryColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
                           TextButton(
                             onPressed: () =>
                                 Navigator.pop(confirmContext, true),
@@ -149,6 +139,17 @@ Future<void> showStudentLessonDialog({
                               '취소하기',
                               style: forestringTextStyle.copyWith(
                                 color: Colors.redAccent,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(confirmContext, false),
+                            child: Text(
+                              '아니요',
+                              style: forestringTextStyle.copyWith(
+                                color: primaryColor,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
