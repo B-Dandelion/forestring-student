@@ -1079,12 +1079,17 @@ class _StudentMyPageState extends State<StudentMyPage> {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 0,
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: primaryColor.withValues(alpha: 0.14)),
       ),
       child: ExpansionTile(
         key: PageStorageKey<String>('past-semester-${semester.id}'),
+        backgroundColor: Colors.white,
+        collapsedBackgroundColor: Colors.white,
         shape: const Border(),
         collapsedShape: const Border(),
         title: Text(
