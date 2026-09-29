@@ -75,15 +75,60 @@ Future<void> showStudentLessonDialog({
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        content: Text(
-                          '$dateLabel\n'
-                          '$timeLabel\n'
-                          '$teacherLabel · ${lesson.displayTypeLabel}\n\n'
-                          '이 수업을 취소하시겠습니까?',
-                          style: forestringTextStyle.copyWith(
-                            fontSize: 15,
-                            height: 1.45,
-                          ),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: ivoryColor,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: primaryColor.withValues(alpha: 0.12),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dateLabel,
+                                    style: forestringTextStyle.copyWith(
+                                      color: primaryColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    timeLabel,
+                                    style: forestringTextStyle.copyWith(
+                                      color: primaryColor,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    '$teacherLabel · ${lesson.displayTypeLabel}',
+                                    style: forestringTextStyle.copyWith(
+                                      color: Colors.black54,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '이 수업을 취소하시겠습니까?',
+                              style: forestringTextStyle.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                         actions: [
                           TextButton(
