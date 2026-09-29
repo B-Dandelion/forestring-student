@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/B-Dandelion/Forestring_teach">Teacher App</a>
   ·
-  Current release: <code>v3.0.3</code>
+  Current release: <code>v3.1.0</code>
 </p>
 
 ---
