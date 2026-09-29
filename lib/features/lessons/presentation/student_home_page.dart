@@ -5,7 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../../core/theme/forestring_theme.dart';
 import '../../../core/widgets/student_navigation.dart';
-import '../../auth/domain/current_profile.dart';
 import '../domain/lesson.dart';
 import 'lesson_controller.dart';
 import 'widgets/lesson_action_dialog.dart';
@@ -14,10 +13,7 @@ import 'widgets/lesson_card.dart';
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({
     super.key,
-    required this.profile,
   });
-
-  final CurrentProfile profile;
 
   @override
   State<StudentHomePage> createState() => _StudentHomePageState();
