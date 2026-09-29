@@ -221,7 +221,6 @@ class _ReschedulePageState extends State<ReschedulePage> {
         _options = loaded;
         _loadingOptions = false;
       });
-      await _bringIntoView(_timeSectionKey);
     } catch (error) {
       if (!mounted || token != _loadToken) {
         return;
@@ -605,12 +604,12 @@ class _ReschedulePageState extends State<ReschedulePage> {
     required Key key,
   }) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 320),
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (child, animation) {
         final slide = Tween<Offset>(
-          begin: const Offset(-0.18, 0),
+          begin: const Offset(-0.30, 0),
           end: Offset.zero,
         ).animate(animation);
 
@@ -881,6 +880,7 @@ class _ReschedulePageState extends State<ReschedulePage> {
                                       _hasSelectedDate = true;
                                       _selectedOption = null;
                                     });
+                                    _bringIntoView(_timeSectionKey);
                                     _loadOptions(selectedRight, selectedDay);
                                   },
                                   onPageChanged: (focusedDay) {
