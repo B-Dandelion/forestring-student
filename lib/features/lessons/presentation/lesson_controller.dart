@@ -17,7 +17,8 @@ class LessonController extends ChangeNotifier {
   LessonHistoryData? _history;
   DateTime? _calendarFirstDay;
   DateTime? _calendarLastDay;
-  DateTime? _lastRefreshAt;
+  DateTime? _lessonsRefreshedAt;
+  DateTime? _historyRefreshedAt;
 
   bool get isLoading => _isLoading;
   bool get isHistoryLoading => _isHistoryLoading;
@@ -26,7 +27,8 @@ class LessonController extends ChangeNotifier {
   List<Lesson> get lessons => _lessons;
   LessonHistoryData? get history => _history;
   bool get hasHistory => _history != null;
-  DateTime? get lastRefreshAt => _lastRefreshAt;
+  DateTime? get lessonsRefreshedAt => _lessonsRefreshedAt;
+  DateTime? get historyRefreshedAt => _historyRefreshedAt;
 
   DateTime get calendarFirstDay {
     final now = DateTime.now();
@@ -78,7 +80,7 @@ class LessonController extends ChangeNotifier {
         from: safeFirstDay,
         to: lastDay.add(const Duration(days: 1)),
       );
-      _lastRefreshAt = DateTime.now();
+      _lessonsRefreshedAt = DateTime.now();
     } on LessonFailure catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -107,7 +109,7 @@ class LessonController extends ChangeNotifier {
 
     try {
       _history = await _repository.fetchMyLessonHistory();
-      _lastRefreshAt = DateTime.now();
+      _lessonsRefreshedAt = DateTime.now();
     } on LessonFailure catch (error) {
       _historyErrorMessage = error.message;
     } catch (_) {
@@ -126,13 +128,24 @@ class LessonController extends ChangeNotifier {
     }
   }
 
-  Future<void> refreshIfStale({
+  Future<void> refreshLessonsIfStale({
     Duration maxAge = const Duration(seconds: 30),
   }) async {
-    final refreshedAt = _lastRefreshAt;
+    final refreshedAt = _lessonsRefreshedAt;
     if (refreshedAt == null ||
         DateTime.now().difference(refreshedAt) >= maxAge) {
-      await refreshAll();
+      await reload();
+    }
+  }
+
+  Future<void> refreshHistoryIfStale({
+    Duration maxAge = const Duration(seconds: 30),
+  }) async {
+    final refreshedAt = _historyRefreshedAt;
+    if (_history == null ||
+        refreshedAt == null ||
+        DateTime.now().difference(refreshedAt) >= maxAge) {
+      await reloadHistory();
     }
   }
 
@@ -152,7 +165,7 @@ class LessonController extends ChangeNotifier {
       final history = await _repository.fetchMyLessonHistory();
       _history = history;
       _historyErrorMessage = null;
-      _lastRefreshAt = DateTime.now();
+      _lessonsRefreshedAt = DateTime.now();
       notifyListeners();
 
       final semester = history.currentSemester;
