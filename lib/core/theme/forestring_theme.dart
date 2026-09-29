@@ -15,6 +15,7 @@ ThemeData buildForestringTheme() {
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
     ),
+    fontFamily: 'ELAND',
     useMaterial3: true,
   );
 }
