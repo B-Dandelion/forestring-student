@@ -20,8 +20,17 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
-  DateTime _selectedDate = DateTime.now();
-  DateTime _focusedDate = DateTime.now();
+  late DateTime _selectedDate;
+  late DateTime _focusedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    _selectedDate = today;
+    _focusedDate = today;
+  }
 
   static const _weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
   static const _fullWeekdayLabels = [
@@ -38,25 +47,229 @@ class _StudentHomePageState extends State<StudentHomePage> {
     DateTime firstDay,
     DateTime lastDay,
   ) async {
-    var initialDate = _focusedDate;
-    if (initialDate.isBefore(firstDay)) {
-      initialDate = firstDay;
-    } else if (initialDate.isAfter(lastDay)) {
-      initialDate = lastDay;
-    }
+    final initialMonth = DateTime(
+      _focusedDate.year,
+      _focusedDate.month,
+    );
+    final firstMonth = DateTime(firstDay.year, firstDay.month);
+    final lastMonth = DateTime(lastDay.year, lastDay.month);
 
-    final picked = await showDatePicker(
+    final pickedMonth = await showModalBottomSheet<DateTime>(
       context: context,
-      initialDate: initialDate,
-      firstDate: firstDay,
-      lastDate: lastDay,
-      helpText: '날짜 이동',
-      cancelText: '취소',
-      confirmText: '이동',
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        var selectedYear = initialMonth.year
+            .clamp(firstMonth.year, lastMonth.year);
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final availableYears = List<int>.generate(
+              lastMonth.year - firstMonth.year + 1,
+              (index) => firstMonth.year + index,
+            );
+
+            bool monthEnabled(int month) {
+              final candidate = DateTime(selectedYear, month);
+              return !candidate.isBefore(firstMonth) &&
+                  !candidate.isAfter(lastMonth);
+            }
+
+            return SafeArea(
+              top: false,
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '날짜 이동',
+                            style: forestringTextStyle.copyWith(
+                              color: Colors.black87,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            final now = DateTime.now();
+                            final today = DateTime(
+                              now.year,
+                              now.month,
+                              now.day,
+                            );
+                            if (!today.isBefore(firstDay) &&
+                                !today.isAfter(lastDay)) {
+                              Navigator.of(context).pop(
+                                DateTime(today.year, today.month),
+                              );
+                            }
+                          },
+                          child: Text(
+                            '오늘',
+                            style: forestringTextStyle.copyWith(
+                              color: primaryColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 38,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: availableYears.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final year = availableYears[index];
+                          final selected = year == selectedYear;
+                          return ChoiceChip(
+                            label: Text('$year년'),
+                            selected: selected,
+                            showCheckmark: false,
+                            onSelected: (_) {
+                              setModalState(() {
+                                selectedYear = year;
+                              });
+                            },
+                            selectedColor:
+                                primaryColor.withValues(alpha: 0.12),
+                            backgroundColor:
+                                Colors.black.withValues(alpha: 0.04),
+                            side: BorderSide(
+                              color: selected
+                                  ? primaryColor.withValues(alpha: 0.18)
+                                  : Colors.transparent,
+                            ),
+                            labelStyle: forestringTextStyle.copyWith(
+                              color: selected
+                                  ? primaryColor
+                                  : Colors.black54,
+                              fontSize: 12,
+                              fontWeight: selected
+                                  ? FontWeight.w500
+                                  : FontWeight.w400,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisExtent: 44,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                      ),
+                      itemCount: 12,
+                      itemBuilder: (context, index) {
+                        final month = index + 1;
+                        final enabled = monthEnabled(month);
+                        final selected = selectedYear == initialMonth.year &&
+                            month == initialMonth.month;
+
+                        return OutlinedButton(
+                          onPressed: enabled
+                              ? () => Navigator.of(context).pop(
+                                    DateTime(selectedYear, month),
+                                  )
+                              : null,
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: selected
+                                ? primaryColor
+                                : Colors.white,
+                            foregroundColor: selected
+                                ? Colors.white
+                                : Colors.black87,
+                            disabledForegroundColor: Colors.black26,
+                            side: BorderSide(
+                              color: selected
+                                  ? primaryColor
+                                  : primaryColor.withValues(alpha: 0.10),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            '$month월',
+                            style: forestringTextStyle.copyWith(
+                              color: enabled
+                                  ? selected
+                                      ? Colors.white
+                                      : Colors.black87
+                                  : Colors.black26,
+                              fontSize: 13,
+                              fontWeight: selected
+                                  ? FontWeight.w500
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
 
-    if (picked == null || !mounted) {
+    if (pickedMonth == null || !mounted) {
       return;
+    }
+
+    final now = DateTime.now();
+    final isCurrentMonth =
+        pickedMonth.year == now.year && pickedMonth.month == now.month;
+    final preferredDay = isCurrentMonth ? now.day : 1;
+    final daysInMonth = DateTime(
+      pickedMonth.year,
+      pickedMonth.month + 1,
+      0,
+    ).day;
+    var picked = DateTime(
+      pickedMonth.year,
+      pickedMonth.month,
+      preferredDay.clamp(1, daysInMonth),
+    );
+
+    if (picked.isBefore(firstDay)) {
+      picked = firstDay;
+    } else if (picked.isAfter(lastDay)) {
+      picked = lastDay;
     }
 
     setState(() {
