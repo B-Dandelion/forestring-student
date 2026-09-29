@@ -212,7 +212,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
                       style: forestringTextStyle.copyWith(
                         color: Colors.black87,
                         fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -367,7 +367,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
                     style: forestringTextStyle.copyWith(
                       color: Colors.white,
                       fontSize: 29,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 5),
