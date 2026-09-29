@@ -91,10 +91,10 @@ class _StudentShellState extends State<StudentShell>
     });
 
     final controller = context.read<LessonController>();
-    unawaited(controller.refreshIfStale());
-
-    if (index == _myPageIndex) {
-      unawaited(controller.ensureHistoryLoaded());
+    if (index == _scheduleIndex) {
+      unawaited(controller.refreshLessonsIfStale());
+    } else if (index == _myPageIndex) {
+      unawaited(controller.refreshHistoryIfStale());
     }
   }
 
