@@ -303,9 +303,9 @@ class _ReschedulePageState extends State<ReschedulePage> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              mainAxisExtent: 58,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 10,
+              mainAxisExtent: 50,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
             ),
             itemCount: options.length,
             itemBuilder: (context, index) {
@@ -326,13 +326,13 @@ class _ReschedulePageState extends State<ReschedulePage> {
                     color: Colors.black.withValues(alpha: 0.12),
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: Text(
                   _formatBookingTime(option.startsAt),
                   style: forestringTextStyle.copyWith(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -344,21 +344,6 @@ class _ReschedulePageState extends State<ReschedulePage> {
     );
   }
 
-  String _rightLabel(LessonRightHistory right) {
-    final lesson = right.lesson;
-    if (lesson != null && lesson.isCanceled) {
-      return '${DateFormat('M월 d일 HH:mm').format(lesson.startsAt)} '
-          '· 재예약 · ${right.durationMinutes}분';
-    }
-
-    final type = switch (right.origin) {
-      'flex_base' => '자율 예약 수업권',
-      'carryover' => '보강 수업권',
-      'regular_base' => '정규 수업권',
-      _ => '수업권',
-    };
-    return '$type ${right.sequenceNo} · ${right.durationMinutes}분';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -444,15 +429,17 @@ class _ReschedulePageState extends State<ReschedulePage> {
                         child: DropdownButtonFormField<String>(
                           initialValue: selectedRight?.id,
                           decoration: const InputDecoration(
-                            labelText: '예약할 수업권',
+                            labelText: '수업권 선택',
                             border: OutlineInputBorder(),
                           ),
                           items: rights
+                              .asMap()
+                              .entries
                               .map(
-                                (right) => DropdownMenuItem<String>(
-                                  value: right.id,
+                                (entry) => DropdownMenuItem<String>(
+                                  value: entry.value.id,
                                   child: Text(
-                                    _rightLabel(right),
+                                    '수업권 ${entry.key + 1}',
                                     style: forestringTextStyle,
                                   ),
                                 ),
