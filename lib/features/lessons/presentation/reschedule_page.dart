@@ -20,7 +20,8 @@ class ReschedulePage extends StatefulWidget {
   State<ReschedulePage> createState() => _ReschedulePageState();
 }
 
-class _ReschedulePageState extends State<ReschedulePage> {
+class _ReschedulePageState extends State<ReschedulePage>
+    with SingleTickerProviderStateMixin {
   static const _weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
 
   List<LessonRightHistory> _bookingRights = const [];
@@ -40,6 +41,22 @@ class _ReschedulePageState extends State<ReschedulePage> {
   int _loadToken = 0;
   final GlobalKey _timeSectionKey = GlobalKey();
   final GlobalKey _confirmSectionKey = GlobalKey();
+  late final AnimationController _stepPulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _stepPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _stepPulseController.dispose();
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(covariant ReschedulePage oldWidget) {
@@ -87,8 +104,13 @@ class _ReschedulePageState extends State<ReschedulePage> {
     return value;
   }
 
-  Future<void> _bringIntoView(GlobalKey key) async {
-    await Future<void>.delayed(const Duration(milliseconds: 120));
+  Future<void> _bringIntoView(
+    GlobalKey key, {
+    Duration delay = const Duration(milliseconds: 120),
+    Duration duration = const Duration(milliseconds: 360),
+    double alignment = 0.18,
+  }) async {
+    await Future<void>.delayed(delay);
     if (!mounted) {
       return;
     }
@@ -100,9 +122,9 @@ class _ReschedulePageState extends State<ReschedulePage> {
 
     await Scrollable.ensureVisible(
       targetContext,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-      alignment: 0.18,
+      duration: duration,
+      curve: Curves.easeInOutCubic,
+      alignment: alignment,
     );
   }
 
@@ -389,17 +411,40 @@ class _ReschedulePageState extends State<ReschedulePage> {
             width: 84,
             child: Column(
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: active || completed
-                        ? primaryColor
-                        : Colors.black.withValues(alpha: 0.06),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
+                AnimatedBuilder(
+                  animation: _stepPulseController,
+                  builder: (context, child) {
+                    final pulse = active
+                        ? Curves.easeInOut.transform(
+                            _stepPulseController.value,
+                          )
+                        : 0.0;
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: active || completed
+                            ? primaryColor
+                            : Colors.black.withValues(alpha: 0.06),
+                        shape: BoxShape.circle,
+                        boxShadow: active
+                            ? [
+                                BoxShadow(
+                                  color: primaryColor.withValues(
+                                    alpha: 0.10 + (0.13 * pulse),
+                                  ),
+                                  blurRadius: 7 + (7 * pulse),
+                                  spreadRadius: 1 + (2 * pulse),
+                                ),
+                              ]
+                            : const [],
+                      ),
+                      alignment: Alignment.center,
+                      child: child,
+                    );
+                  },
                   child: completed
                       ? const Icon(
                           Icons.check_rounded,
@@ -880,7 +925,13 @@ class _ReschedulePageState extends State<ReschedulePage> {
                                       _hasSelectedDate = true;
                                       _selectedOption = null;
                                     });
-                                    _bringIntoView(_timeSectionKey);
+                                    _bringIntoView(
+                                      _timeSectionKey,
+                                      delay: const Duration(milliseconds: 220),
+                                      duration:
+                                          const Duration(milliseconds: 620),
+                                      alignment: 0.12,
+                                    );
                                     _loadOptions(selectedRight, selectedDay);
                                   },
                                   onPageChanged: (focusedDay) {
