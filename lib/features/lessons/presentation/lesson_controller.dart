@@ -62,13 +62,13 @@ class LessonController extends ChangeNotifier {
     try {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final enrollmentStart = await _repository.fetchEnrollmentStartDate();
-      final firstDay = enrollmentStart == null
+      final calendarStart = await _repository.fetchCalendarStartDate();
+      final firstDay = calendarStart == null
           ? DateTime(now.year, now.month, 1)
           : DateTime(
-              enrollmentStart.year,
-              enrollmentStart.month,
-              enrollmentStart.day,
+              calendarStart.year,
+              calendarStart.month,
+              calendarStart.day,
             );
       final safeFirstDay = firstDay.isAfter(today) ? today : firstDay;
       final lastDay = DateTime(now.year, now.month + 2, 0);
