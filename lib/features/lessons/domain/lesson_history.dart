@@ -243,24 +243,17 @@ class LessonActivityHistory {
   DateTime? get startsAt => _parseDate(details['startsAt']);
   DateTime? get endsAt => _parseDate(details['endsAt']);
 
-  String actorLabel(String studentId) {
+  String actorRoleLabel(String studentId) {
     if (actorId != null && actorId == studentId) {
       return '본인';
     }
 
-    final name = actorName?.trim();
-    final roleLabel = switch (actorRole) {
+    return switch (actorRole) {
       'master' => '전체 관리자',
-      'manager' => '지점장',
-      'teacher' => '선생님',
-      'student' => '수강생',
-      _ => '시스템',
+      'manager' || 'teacher' => '지점 관리자',
+      'student' => '본인',
+      _ => '전체 관리자',
     };
-
-    if (name == null || name.isEmpty) {
-      return roleLabel;
-    }
-    return '$name · $roleLabel';
   }
 
   static DateTime? _parseDate(dynamic value) {
