@@ -297,6 +297,76 @@ class ReviewLessonRepository extends LessonRepository {
                 ),
               ];
 
+        final activities = <LessonActivityHistory>[
+          LessonActivityHistory(
+            lessonRightId: rightId,
+            eventType: 'LESSON_ORIGINAL_SCHEDULE',
+            eventAt: _originalStartsByRight[rightId]!
+                .subtract(const Duration(days: 14)),
+            actorId: null,
+            actorName: null,
+            actorRole: null,
+            details: {
+              'rightId': rightId,
+              'lessonId': lesson.id,
+              'startsAt': _originalStartsByRight[rightId]!.toIso8601String(),
+              'endsAt': _originalStartsByRight[rightId]!
+                  .add(Duration(minutes: lesson.durationMinutes))
+                  .toIso8601String(),
+              'durationMinutes': lesson.durationMinutes,
+            },
+          ),
+        ];
+
+        if (canceledAt != null) {
+          activities.add(
+            LessonActivityHistory(
+              lessonRightId: rightId,
+              eventType: 'LESSON_CANCELED',
+              eventAt: canceledAt,
+              actorId: studentId,
+              actorName: null,
+              actorRole: 'student',
+              details: {
+                'rightId': rightId,
+                'lessonId': lesson.id,
+                'cancellationOrigin': 'student',
+                'countsTowardLimit': true,
+                'startsAt': _originalStartsByRight[rightId]!.toIso8601String(),
+                'endsAt': _originalStartsByRight[rightId]!
+                    .add(Duration(minutes: lesson.durationMinutes))
+                    .toIso8601String(),
+              },
+            ),
+          );
+        }
+
+        final reservedAt = _reservedAtByRight[rightId];
+        if (canceledAt != null &&
+            reservedAt != null &&
+            !lesson.isCanceled &&
+            lesson.rescheduledBy == studentId) {
+          activities.add(
+            LessonActivityHistory(
+              lessonRightId: rightId,
+              eventType: 'LESSON_RIGHT_BOOKED',
+              eventAt: reservedAt,
+              actorId: studentId,
+              actorName: null,
+              actorRole: 'student',
+              details: {
+                'rightId': rightId,
+                'lessonId': lesson.id,
+                'reusedLesson': true,
+                'regularRebooking': true,
+                'startsAt': lesson.startsAt.toIso8601String(),
+                'endsAt': lesson.endsAt.toIso8601String(),
+                'durationMinutes': lesson.durationMinutes,
+              },
+            ),
+          );
+        }
+
         rights.add(
           LessonRightHistory(
             id: rightId,
@@ -307,9 +377,22 @@ class ReviewLessonRepository extends LessonRepository {
             reservedAt: _reservedAtByRight[rightId],
             lesson: lesson,
             cancellations: cancellations,
+            activities: activities,
           ),
         );
       }
+
+      final countedCancellations = rights.fold<int>(
+        0,
+        (sum, right) =>
+            sum +
+            right.cancellations
+                .where(
+                  (event) =>
+                      event.origin == 'student' && event.countsTowardLimit,
+                )
+                .length,
+      );
 
       semesterHistories.add(
         SemesterLessonHistory(
@@ -318,6 +401,14 @@ class ReviewLessonRepository extends LessonRepository {
           startsOn: semester.startsOn,
           endsOn: semester.endsOn,
           rights: rights,
+          cancellationQuota: CancellationQuotaSummary(
+            semesterId: semester.id,
+            studentType: 'regular',
+            cancellationLimit: 2,
+            countedCancellations: countedCancellations,
+            remainingCancellations:
+                (2 - countedCancellations).clamp(0, 2),
+          ),
         ),
       );
     }
