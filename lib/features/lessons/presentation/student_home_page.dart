@@ -60,7 +60,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
       isScrollControlled: true,
       builder: (context) {
         var selectedYear = initialMonth.year
-            .clamp(firstMonth.year, lastMonth.year);
+            .clamp(firstMonth.year, lastMonth.year)
+            .toInt();
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -263,7 +264,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     var picked = DateTime(
       pickedMonth.year,
       pickedMonth.month,
-      preferredDay.clamp(1, daysInMonth),
+      preferredDay.clamp(1, daysInMonth).toInt(),
     );
 
     if (picked.isBefore(firstDay)) {
