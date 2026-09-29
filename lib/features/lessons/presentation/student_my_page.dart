@@ -848,7 +848,13 @@ class _StudentMyPageState extends State<StudentMyPage> {
 
     final visibleActivities = [...right.activities]
       ..sort((a, b) => a.eventAt.compareTo(b.eventAt));
-    final showTimeline = visibleActivities.length > 1;
+    final showTimeline = visibleActivities.any(
+      (activity) =>
+          activity.isCancellation ||
+          activity.isRebooking ||
+          activity.isManualUpdate ||
+          activity.isMakeupCreated,
+    );
 
     return StudentLessonHistoryCard(
       title: title,
