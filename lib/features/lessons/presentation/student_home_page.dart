@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../core/theme/forestring_theme.dart';
+import '../../../core/widgets/student_navigation.dart';
 import '../domain/lesson.dart';
 import 'lesson_controller.dart';
 import 'widgets/lesson_action_dialog.dart';
@@ -380,61 +381,73 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final lastDay = controller.calendarLastDay;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF8F6F0),
-      appBar: AppBar(
-        backgroundColor: const Color(0xffF8F6F0),
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: primaryColor,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          '일정',
-          style: forestringTextStyle.copyWith(
-            color: primaryColor,
-            fontSize: 21,
-            fontWeight: FontWeight.w500,
+      backgroundColor: const Color(0xffF4F1E8),
+      appBar: const StudentAppBar(title: '일정'),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xffF4F1E8),
+              Color(0xffEEF3E9),
+            ],
           ),
         ),
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
+        child: SafeArea(
+          child: RefreshIndicator(
           onRefresh: controller.refreshAll,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 30),
             children: [
               _calendarCard(controller, firstDay, lastDay),
-              const SizedBox(height: 24),
-              _lessonSectionHeader(selectedLessons.length),
-              const SizedBox(height: 12),
-              if (controller.errorMessage != null) ...[
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 11,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    controller.errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: forestringTextStyle.copyWith(
-                      color: Colors.redAccent,
-                      fontSize: 12,
-                    ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xffE8F0E4),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: primaryColor.withValues(alpha: 0.06),
                   ),
                 ),
-              ],
-              _lessonContent(
-                context,
-                controller,
-                selectedLessons,
+                child: Column(
+                  children: [
+                    _lessonSectionHeader(selectedLessons.length),
+                    const SizedBox(height: 12),
+                    if (controller.errorMessage != null) ...[
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 11,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withValues(alpha: 0.07),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          controller.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: forestringTextStyle.copyWith(
+                            color: Colors.redAccent,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                    _lessonContent(
+                      context,
+                      controller,
+                      selectedLessons,
+                    ),
+                  ],
+                ),
               ),
             ],
+            ),
           ),
         ),
       ),
