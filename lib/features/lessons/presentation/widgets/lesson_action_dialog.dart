@@ -57,27 +57,60 @@ Future<void> showStudentLessonDialog({
             onPressed: () async {
               final confirmed = await showDialog<bool>(
                     context: dialogContext,
-                    builder: (confirmContext) => AlertDialog(
-                      title: const Text('수업 취소'),
-                      content: const Text(
-                        '이 수업을 취소하시겠습니까?\n취소 가능 횟수와 수강권 정책은 자동으로 적용됩니다.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () =>
-                              Navigator.pop(confirmContext, false),
-                          child: const Text('아니요'),
-                        ),
-                        TextButton(
-                          onPressed: () =>
-                              Navigator.pop(confirmContext, true),
-                          child: const Text(
-                            '취소하기',
-                            style: TextStyle(color: Colors.redAccent),
+                    builder: (confirmContext) {
+                      final dateLabel =
+                          DateFormat('yyyy년 M월 d일').format(lesson.startsAt);
+                      final timeLabel =
+                          '${DateFormat('HH:mm').format(lesson.startsAt)} '
+                          '~ ${DateFormat('HH:mm').format(lesson.endsAt)}';
+                      final teacherLabel =
+                          '${lesson.teacherName ?? '담당 선생님'} 선생님';
+
+                      return AlertDialog(
+                        title: Text(
+                          '수업 취소',
+                          style: forestringTextStyle.copyWith(
+                            color: primaryColor,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    ),
+                        content: Text(
+                          '$dateLabel\n'
+                          '$timeLabel\n'
+                          '$teacherLabel · ${lesson.displayTypeLabel}\n\n'
+                          '이 수업을 취소하시겠습니까?',
+                          style: forestringTextStyle.copyWith(
+                            fontSize: 15,
+                            height: 1.45,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(confirmContext, false),
+                            child: Text(
+                              '아니요',
+                              style: forestringTextStyle.copyWith(
+                                color: primaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(confirmContext, true),
+                            child: Text(
+                              '취소하기',
+                              style: forestringTextStyle.copyWith(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ) ??
                   false;
 
