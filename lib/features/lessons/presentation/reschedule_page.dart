@@ -1010,6 +1010,8 @@ class _ReschedulePageState extends State<ReschedulePage>
                                   firstDay: _dateOnly(_window!.startsOn),
                                   lastDay: _dateOnly(_window!.endsOn),
                                   focusedDay: _focusedDate,
+                                  availableGestures:
+                                      AvailableGestures.horizontalSwipe,
                                   startingDayOfWeek:
                                       StartingDayOfWeek.sunday,
                                   selectedDayPredicate: (day) =>
