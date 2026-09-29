@@ -65,175 +65,158 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
   }
 
-  Widget _calendarCard(
+  Widget _calendar(
     LessonController controller,
     DateTime firstDay,
     DateTime lastDay,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: 0.07),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-      child: TableCalendar<Lesson>(
-        firstDay: firstDay,
-        lastDay: lastDay,
-        focusedDay: _focusedDate,
-        startingDayOfWeek: StartingDayOfWeek.sunday,
-        selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
-        eventLoader: controller.lessonsOn,
-        onDaySelected: (selectedDay, focusedDay) {
-          setState(() {
-            _selectedDate = selectedDay;
-            _focusedDate = focusedDay;
-          });
-        },
-        onPageChanged: (focusedDay) {
+    return TableCalendar<Lesson>(
+      firstDay: firstDay,
+      lastDay: lastDay,
+      focusedDay: _focusedDate,
+      startingDayOfWeek: StartingDayOfWeek.sunday,
+      selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+      eventLoader: controller.lessonsOn,
+      onDaySelected: (selectedDay, focusedDay) {
+        setState(() {
+          _selectedDate = selectedDay;
           _focusedDate = focusedDay;
-        },
-        rowHeight: 48,
-        daysOfWeekHeight: 34,
-        headerStyle: HeaderStyle(
-          titleCentered: true,
-          formatButtonVisible: false,
-          leftChevronMargin: const EdgeInsets.only(left: 4),
-          rightChevronMargin: const EdgeInsets.only(right: 4),
-          leftChevronIcon: Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
-              color: Color(0xffF3F6EF),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.chevron_left_rounded,
-              color: primaryColor,
-              size: 22,
-            ),
+        });
+      },
+      onPageChanged: (focusedDay) {
+        _focusedDate = focusedDay;
+      },
+      rowHeight: 48,
+      daysOfWeekHeight: 34,
+      headerStyle: HeaderStyle(
+        titleCentered: true,
+        formatButtonVisible: false,
+        leftChevronMargin: const EdgeInsets.only(left: 4),
+        rightChevronMargin: const EdgeInsets.only(right: 4),
+        leftChevronIcon: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: primaryColor.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
           ),
-          rightChevronIcon: Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
-              color: Color(0xffF3F6EF),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.chevron_right_rounded,
-              color: primaryColor,
-              size: 22,
-            ),
-          ),
-          titleTextStyle: const TextStyle(
-            fontFamily: 'ELAND',
-            fontWeight: FontWeight.w500,
-            fontSize: 19,
+          child: const Icon(
+            Icons.chevron_left_rounded,
             color: primaryColor,
+            size: 22,
           ),
         ),
-        calendarStyle: CalendarStyle(
-          outsideDaysVisible: false,
-          cellMargin: const EdgeInsets.all(5),
-          todayDecoration: const BoxDecoration(
-            color: Color(0xffE7EFE4),
+        rightChevronIcon: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: primaryColor.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
-          todayTextStyle: const TextStyle(
+          child: const Icon(
+            Icons.chevron_right_rounded,
             color: primaryColor,
-            fontFamily: 'ELAND',
-            fontWeight: FontWeight.w500,
+            size: 22,
           ),
-          selectedDecoration: const BoxDecoration(
-            color: primaryColor,
-            shape: BoxShape.circle,
-          ),
-          selectedTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: 'ELAND',
-            fontWeight: FontWeight.w500,
-          ),
-          defaultTextStyle: forestringTextStyle.copyWith(
-            color: Colors.black87,
-            fontSize: 14,
-          ),
-          weekendTextStyle: forestringTextStyle.copyWith(
-            color: Colors.black87,
-            fontSize: 14,
-          ),
-          markerDecoration: const BoxDecoration(
-            color: secondaryColor,
-            shape: BoxShape.circle,
-          ),
-          markerSize: 5,
-          markersMaxCount: 1,
-          markersAlignment: Alignment.bottomCenter,
-          markerMargin: const EdgeInsets.only(top: 1),
         ),
-        calendarBuilders: CalendarBuilders(
-          headerTitleBuilder: (context, day) {
-            return Center(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () => _pickCalendarDate(firstDay, lastDay),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${day.year}년 ${day.month}월',
-                        style: forestringTextStyle.copyWith(
-                          color: primaryColor,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'ELAND',
+          fontWeight: FontWeight.w500,
+          fontSize: 19,
+          color: primaryColor,
+        ),
+      ),
+      calendarStyle: CalendarStyle(
+        outsideDaysVisible: false,
+        cellMargin: const EdgeInsets.all(5),
+        todayDecoration: const BoxDecoration(
+          color: Color(0xffE7EFE4),
+          shape: BoxShape.circle,
+        ),
+        todayTextStyle: const TextStyle(
+          color: primaryColor,
+          fontFamily: 'ELAND',
+          fontWeight: FontWeight.w500,
+        ),
+        selectedDecoration: const BoxDecoration(
+          color: primaryColor,
+          shape: BoxShape.circle,
+        ),
+        selectedTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: 'ELAND',
+          fontWeight: FontWeight.w500,
+        ),
+        defaultTextStyle: forestringTextStyle.copyWith(
+          color: Colors.black87,
+          fontSize: 14,
+        ),
+        weekendTextStyle: forestringTextStyle.copyWith(
+          color: Colors.black87,
+          fontSize: 14,
+        ),
+        markerDecoration: const BoxDecoration(
+          color: secondaryColor,
+          shape: BoxShape.circle,
+        ),
+        markerSize: 5,
+        markersMaxCount: 1,
+        markersAlignment: Alignment.bottomCenter,
+        markerMargin: const EdgeInsets.only(top: 1),
+      ),
+      calendarBuilders: CalendarBuilders(
+        headerTitleBuilder: (context, day) {
+          return Center(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _pickCalendarDate(firstDay, lastDay),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${day.year}년 ${day.month}월',
+                      style: forestringTextStyle.copyWith(
                         color: primaryColor,
-                        size: 19,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 3),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: primaryColor,
+                      size: 19,
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-          dowBuilder: (context, day) {
-            final label = _weekdayLabels[day.weekday - 1];
-            final color = day.weekday == DateTime.sunday
-                ? Colors.redAccent
-                : day.weekday == DateTime.saturday
-                    ? Colors.blueAccent
-                    : Colors.black45;
+            ),
+          );
+        },
+        dowBuilder: (context, day) {
+          final label = _weekdayLabels[day.weekday - 1];
+          final color = day.weekday == DateTime.sunday
+              ? Colors.redAccent
+              : day.weekday == DateTime.saturday
+                  ? Colors.blueAccent
+                  : Colors.black45;
 
-            return Center(
-              child: Text(
-                label,
-                style: forestringTextStyle.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: color,
-                ),
+          return Center(
+            child: Text(
+              label,
+              style: forestringTextStyle.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: color,
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -325,51 +308,32 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final lessons = [...selectedLessons]
       ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 220),
-      switchInCurve: Curves.easeOutCubic,
-      transitionBuilder: (child, animation) {
-        final offset = Tween<Offset>(
-          begin: const Offset(0.04, 0),
-          end: Offset.zero,
-        ).animate(animation);
+    if (controller.isLoading && controller.lessons.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 54),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: offset,
-            child: child,
+    if (lessons.isEmpty) {
+      return _emptyLessonCard();
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < lessons.length; i++) ...[
+          StudentLessonCard(
+            lesson: lessons[i],
+            onTap: () => showStudentLessonDialog(
+              context: context,
+              lesson: lessons[i],
+              controller: context.read<LessonController>(),
+            ),
           ),
-        );
-      },
-      child: Container(
-        key: ValueKey<String>(
-          '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}',
-        ),
-        child: controller.isLoading && controller.lessons.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 54),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            : lessons.isEmpty
-                ? _emptyLessonCard()
-                : Column(
-                    children: [
-                      for (var i = 0; i < lessons.length; i++) ...[
-                        StudentLessonCard(
-                          lesson: lessons[i],
-                          onTap: () => showStudentLessonDialog(
-                            context: context,
-                            lesson: lessons[i],
-                            controller: context.read<LessonController>(),
-                          ),
-                        ),
-                        if (i != lessons.length - 1)
-                          const SizedBox(height: 10),
-                      ],
-                    ],
-                  ),
-      ),
+          if (i != lessons.length - 1)
+            const SizedBox(height: 10),
+        ],
+      ],
     );
   }
 
@@ -401,7 +365,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 30),
             children: [
-              _calendarCard(controller, firstDay, lastDay),
+              _calendar(controller, firstDay, lastDay),
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
