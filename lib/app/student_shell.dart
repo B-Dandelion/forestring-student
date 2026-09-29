@@ -106,12 +106,10 @@ class _StudentShellState extends State<StudentShell>
     return switch (index) {
       _reservationIndex => ReschedulePage(
           key: const PageStorageKey<String>('student-reservation-tab'),
-          profile: widget.profile,
           refreshSignal: _reservationRefreshSignal,
         ),
-      _scheduleIndex => StudentHomePage(
-          key: const PageStorageKey<String>('student-schedule-tab'),
-          profile: widget.profile,
+      _scheduleIndex => const StudentHomePage(
+          key: PageStorageKey<String>('student-schedule-tab'),
         ),
       _myPageIndex => StudentMyPage(
           key: const PageStorageKey<String>('student-my-page-tab'),
