@@ -205,23 +205,102 @@ class _ReschedulePageState extends State<ReschedulePage> {
 
     final confirmed = await showDialog<bool>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('수업 예약'),
-            content: Text(
-              '${DateFormat('M월 d일 HH:mm').format(option.startsAt)} ~ '
-              '${DateFormat('HH:mm').format(option.endsAt)}\n이 시간으로 예약하시겠습니까?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('취소'),
+          builder: (dialogContext) {
+            final dateLabel =
+                DateFormat('yyyy년 M월 d일').format(option.startsAt);
+            final timeLabel =
+                '${DateFormat('HH:mm').format(option.startsAt)} '
+                '~ ${DateFormat('HH:mm').format(option.endsAt)}';
+
+            return AlertDialog(
+              title: Text(
+                '수업 예약',
+                style: forestringTextStyle.copyWith(
+                  color: primaryColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('예약'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: ivoryColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: primaryColor.withValues(alpha: 0.12),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          dateLabel,
+                          style: forestringTextStyle.copyWith(
+                            color: primaryColor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          timeLabel,
+                          style: forestringTextStyle.copyWith(
+                            color: primaryColor,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          '${right.durationMinutes}분 수업',
+                          style: forestringTextStyle.copyWith(
+                            color: Colors.black54,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '이 시간으로 수업을 예약하시겠습니까?',
+                    style: forestringTextStyle.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+              actionsAlignment: MainAxisAlignment.spaceBetween,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(
+                    '예약',
+                    style: forestringTextStyle.copyWith(
+                      color: primaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(
+                    '취소',
+                    style: forestringTextStyle.copyWith(
+                      color: primaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ) ??
         false;
 
