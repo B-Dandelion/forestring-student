@@ -10,14 +10,23 @@ class LessonController extends ChangeNotifier {
   final LessonRepository _repository;
 
   bool _isLoading = false;
+  bool _isHistoryLoading = false;
   String? _errorMessage;
+  String? _historyErrorMessage;
   List<Lesson> _lessons = const [];
+  LessonHistoryData? _history;
   DateTime? _calendarFirstDay;
   DateTime? _calendarLastDay;
+  DateTime? _lastRefreshAt;
 
   bool get isLoading => _isLoading;
+  bool get isHistoryLoading => _isHistoryLoading;
   String? get errorMessage => _errorMessage;
+  String? get historyErrorMessage => _historyErrorMessage;
   List<Lesson> get lessons => _lessons;
+  LessonHistoryData? get history => _history;
+  bool get hasHistory => _history != null;
+  DateTime? get lastRefreshAt => _lastRefreshAt;
 
   DateTime get calendarFirstDay {
     final now = DateTime.now();
@@ -51,8 +60,7 @@ class LessonController extends ChangeNotifier {
     try {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final enrollmentStart =
-          await _repository.fetchEnrollmentStartDate();
+      final enrollmentStart = await _repository.fetchEnrollmentStartDate();
       final firstDay = enrollmentStart == null
           ? DateTime(now.year, now.month, 1)
           : DateTime(
@@ -60,8 +68,7 @@ class LessonController extends ChangeNotifier {
               enrollmentStart.month,
               enrollmentStart.day,
             );
-      final safeFirstDay =
-          firstDay.isAfter(today) ? today : firstDay;
+      final safeFirstDay = firstDay.isAfter(today) ? today : firstDay;
       final lastDay = DateTime(now.year, now.month + 2, 0);
 
       _calendarFirstDay = safeFirstDay;
@@ -71,6 +78,7 @@ class LessonController extends ChangeNotifier {
         from: safeFirstDay,
         to: lastDay.add(const Duration(days: 1)),
       );
+      _lastRefreshAt = DateTime.now();
     } on LessonFailure catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -81,20 +89,85 @@ class LessonController extends ChangeNotifier {
     }
   }
 
-  Future<LessonHistoryData> fetchLessonHistory() {
-    return _repository.fetchMyLessonHistory();
+  Future<void> ensureHistoryLoaded() async {
+    if (_history != null || _isHistoryLoading) {
+      return;
+    }
+    await reloadHistory();
+  }
+
+  Future<void> reloadHistory() async {
+    if (_isHistoryLoading) {
+      return;
+    }
+
+    _isHistoryLoading = true;
+    _historyErrorMessage = null;
+    notifyListeners();
+
+    try {
+      _history = await _repository.fetchMyLessonHistory();
+      _lastRefreshAt = DateTime.now();
+    } on LessonFailure catch (error) {
+      _historyErrorMessage = error.message;
+    } catch (_) {
+      _historyErrorMessage = '수강 내역을 불러오지 못했습니다.';
+    } finally {
+      _isHistoryLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshAll({bool forceHistory = false}) async {
+    final shouldRefreshHistory = forceHistory || _history != null;
+    await reload();
+    if (shouldRefreshHistory) {
+      await reloadHistory();
+    }
+  }
+
+  Future<void> refreshIfStale({
+    Duration maxAge = const Duration(seconds: 30),
+  }) async {
+    final refreshedAt = _lastRefreshAt;
+    if (refreshedAt == null ||
+        DateTime.now().difference(refreshedAt) >= maxAge) {
+      await refreshAll();
+    }
+  }
+
+  Future<LessonHistoryData> fetchLessonHistory() async {
+    await reloadHistory();
+    final value = _history;
+    if (value == null) {
+      throw LessonFailure(
+        _historyErrorMessage ?? '수강 내역을 불러오지 못했습니다.',
+      );
+    }
+    return value;
   }
 
   Future<List<LessonRightHistory>> fetchAvailableBookingRights() async {
-    final history = await _repository.fetchMyLessonHistory();
-    final semester = history.currentSemester;
-    if (semester == null) {
-      return const [];
-    }
+    try {
+      final history = await _repository.fetchMyLessonHistory();
+      _history = history;
+      _historyErrorMessage = null;
+      _lastRefreshAt = DateTime.now();
+      notifyListeners();
 
-    return semester.rights
-        .where((right) => right.status == 'available')
-        .toList();
+      final semester = history.currentSemester;
+      if (semester == null) {
+        return const [];
+      }
+
+      return semester.rights
+          .where((right) => right.status == 'available')
+          .toList();
+    } on LessonFailure catch (error) {
+      _historyErrorMessage = error.message;
+      notifyListeners();
+      rethrow;
+    }
   }
 
   List<Lesson> lessonsOn(DateTime date) {
@@ -116,7 +189,7 @@ class LessonController extends ChangeNotifier {
         lessonId: lesson.id,
         reason: '학생 앱에서 수업 취소',
       );
-      await reload();
+      await refreshAll();
       return true;
     } on LessonFailure catch (error) {
       _errorMessage = error.message;
@@ -148,7 +221,7 @@ class LessonController extends ChangeNotifier {
         rightId: rightId,
         startsAt: option.startsAt,
       );
-      await reload();
+      await refreshAll();
       return true;
     } on LessonFailure catch (error) {
       _errorMessage = error.message;
