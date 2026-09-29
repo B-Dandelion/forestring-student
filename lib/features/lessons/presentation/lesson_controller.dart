@@ -70,7 +70,11 @@ class LessonController extends ChangeNotifier {
               calendarStart.month,
               calendarStart.day,
             );
-      final safeFirstDay = firstDay.isAfter(today) ? today : firstDay;
+      final serviceStart = DateTime(2024, 1, 1);
+      final boundedFirstDay =
+          firstDay.isBefore(serviceStart) ? serviceStart : firstDay;
+      final safeFirstDay =
+          boundedFirstDay.isAfter(today) ? today : boundedFirstDay;
       final lastDay = DateTime(now.year, now.month + 2, 0);
 
       _calendarFirstDay = safeFirstDay;
