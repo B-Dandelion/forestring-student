@@ -159,32 +159,34 @@ class _StudentHomePageState extends State<StudentHomePage> {
               ),
               calendarBuilders: CalendarBuilders(
                 headerTitleBuilder: (context, day) {
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(10),
-                    onTap: () => _pickCalendarDate(firstDay, lastDay),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${day.month}월',
-                            style: forestringTextStyle.copyWith(
-                              color: primaryColor,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w500,
+                  return Center(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () => _pickCalendarDate(firstDay, lastDay),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${day.month}월',
+                              style: forestringTextStyle.copyWith(
+                                color: primaryColor,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 2),
-                          const Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: primaryColor,
-                            size: 20,
-                          ),
-                        ],
+                            const SizedBox(width: 2),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: primaryColor,
+                              size: 20,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
