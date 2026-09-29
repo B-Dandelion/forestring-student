@@ -751,7 +751,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
               child: _metricCell(
                 icon: Icons.confirmation_number_outlined,
                 label: '기본 수업',
-                value: '${baseCount}회',
+                value: '$baseCount회',
                 backgroundColor: const Color(0xffFBF3E3),
                 iconBackgroundColor: const Color(0xffF6E2B7),
                 iconColor: const Color(0xff98651B),
@@ -788,7 +788,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
               child: _metricCell(
                 icon: Icons.school_outlined,
                 label: '보강 수업',
-                value: carryoverCount == 0 ? '없음' : '${carryoverCount}회',
+                value: carryoverCount == 0 ? '없음' : '$carryoverCount회',
                 backgroundColor: const Color(0xffF0F1EF),
                 iconBackgroundColor: const Color(0xffDFE1DE),
                 iconColor: const Color(0xff59615B),
