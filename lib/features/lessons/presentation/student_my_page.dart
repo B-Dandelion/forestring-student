@@ -203,14 +203,24 @@ class _StudentMyPageState extends State<StudentMyPage> {
   }
 
   Widget _logoutButton() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: TextButton.icon(
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
         onPressed: _confirmLogout,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: const Color(0xffFFF7F6),
+          foregroundColor: Colors.redAccent,
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          side: BorderSide(
+            color: Colors.redAccent.withValues(alpha: 0.16),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
         icon: const Icon(
           Icons.logout_rounded,
-          color: Colors.redAccent,
-          size: 20,
+          size: 19,
         ),
         label: Text(
           '로그아웃',
@@ -440,22 +450,25 @@ class _StudentMyPageState extends State<StudentMyPage> {
                                 icon: Icons.calendar_month_rounded,
                                 label: '예약된 수업',
                                 value: '${metrics.reservedCount}회',
+                                backgroundColor: const Color(0xffEDF5ED),
+                                iconBackgroundColor: const Color(0xffDCEBDD),
+                                iconColor: const Color(0xff477253),
                               ),
                             ),
-                            _metricDivider(),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _metricCell(
                                 icon: Icons.confirmation_number_outlined,
                                 label: '남은 수업권',
                                 value: '${metrics.availableCount}개',
+                                backgroundColor: const Color(0xffFBF3E3),
+                                iconBackgroundColor: const Color(0xffF6E2B7),
+                                iconColor: const Color(0xff98651B),
                               ),
                             ),
                           ],
                         ),
-                        Divider(
-                          height: 22,
-                          color: primaryColor.withValues(alpha: 0.10),
-                        ),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             Expanded(
@@ -465,9 +478,12 @@ class _StudentMyPageState extends State<StudentMyPage> {
                                 value: metrics.remainingCancellations == null
                                     ? '확인 불가'
                                     : '${metrics.remainingCancellations}회',
+                                backgroundColor: const Color(0xffFBEDED),
+                                iconBackgroundColor: const Color(0xffF5DADB),
+                                iconColor: const Color(0xffB75D61),
                               ),
                             ),
-                            _metricDivider(),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _metricCell(
                                 icon: Icons.school_outlined,
@@ -475,6 +491,9 @@ class _StudentMyPageState extends State<StudentMyPage> {
                                 value: metrics.carryoverCount == 0
                                     ? '없음'
                                     : '${metrics.carryoverCount}개',
+                                backgroundColor: const Color(0xffF0F1EF),
+                                iconBackgroundColor: const Color(0xffDFE1DE),
+                                iconColor: const Color(0xff59615B),
                               ),
                             ),
                           ],
@@ -491,62 +510,70 @@ class _StudentMyPageState extends State<StudentMyPage> {
     );
   }
 
-  Widget _metricDivider() {
-    return Container(
-      width: 1,
-      height: 56,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      color: primaryColor.withValues(alpha: 0.10),
-    );
-  }
-
   Widget _metricCell({
     required IconData icon,
     required String label,
     required String value,
+    required Color backgroundColor,
+    required Color iconBackgroundColor,
+    required Color iconColor,
   }) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: const BoxDecoration(
-            color: Color(0xffE7EFE4),
-            shape: BoxShape.circle,
+    return Container(
+      constraints: const BoxConstraints(minHeight: 82),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 11,
+        vertical: 12,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconBackgroundColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 21,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: primaryColor,
-            size: 21,
-          ),
-        ),
-        const SizedBox(width: 9),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: forestringTextStyle.copyWith(
-                  color: Colors.black54,
-                  fontSize: 11,
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: forestringTextStyle.copyWith(
+                    color: Colors.black54,
+                    fontSize: 11,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: forestringTextStyle.copyWith(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: forestringTextStyle.copyWith(
+                    color: Colors.black87,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
