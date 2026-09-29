@@ -120,7 +120,7 @@ class _ReschedulePageState extends State<ReschedulePage>
     }
 
     final targetContext = key.currentContext;
-    if (targetContext == null) {
+    if (targetContext == null || !targetContext.mounted) {
       return;
     }
 
@@ -474,7 +474,7 @@ class _ReschedulePageState extends State<ReschedulePage>
                           size: 17,
                         )
                       : Text(
-                          '${step}',
+                          '$step',
                           style: forestringTextStyle.copyWith(
                             color: active ? Colors.white : Colors.black45,
                             fontSize: 13,
