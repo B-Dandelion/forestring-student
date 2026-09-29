@@ -70,10 +70,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
     DateTime firstDay,
     DateTime lastDay,
   ) {
+    final safeFocusedDay = _focusedDate.isBefore(firstDay)
+        ? firstDay
+        : _focusedDate.isAfter(lastDay)
+            ? lastDay
+            : _focusedDate;
+
     return TableCalendar<Lesson>(
+      key: ValueKey<String>(
+        'schedule-calendar-${firstDay.toIso8601String()}-${lastDay.toIso8601String()}',
+      ),
       firstDay: firstDay,
       lastDay: lastDay,
-      focusedDay: _focusedDate,
+      focusedDay: safeFocusedDay,
       startingDayOfWeek: StartingDayOfWeek.sunday,
       selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
       eventLoader: controller.lessonsOn,
