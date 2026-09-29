@@ -32,11 +32,43 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   static const _weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
 
+  Future<void> _pickCalendarDate(
+    DateTime firstDay,
+    DateTime lastDay,
+  ) async {
+    var initialDate = _focusedDate;
+    if (initialDate.isBefore(firstDay)) {
+      initialDate = firstDay;
+    } else if (initialDate.isAfter(lastDay)) {
+      initialDate = lastDay;
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDay,
+      lastDate: lastDay,
+      helpText: '날짜 이동',
+      cancelText: '취소',
+      confirmText: '이동',
+    );
+
+    if (picked == null || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _selectedDate = picked;
+      _focusedDate = picked;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<LessonController>();
     final selectedLessons = controller.lessonsOn(_selectedDate);
-    final now = DateTime.now();
+    final firstDay = controller.calendarFirstDay;
+    final lastDay = controller.calendarLastDay;
 
     return Scaffold(
       appBar: const StudentAppBar(),
@@ -76,8 +108,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
         child: Column(
           children: [
             TableCalendar<Lesson>(
-              firstDay: DateTime(now.year, now.month - 2, 1),
-              lastDay: DateTime(now.year, now.month + 4, 0),
+              firstDay: firstDay,
+              lastDay: lastDay,
               focusedDay: _focusedDate,
               startingDayOfWeek: StartingDayOfWeek.sunday,
               selectedDayPredicate: (day) =>
@@ -126,6 +158,37 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ),
               ),
               calendarBuilders: CalendarBuilders(
+                headerTitleBuilder: (context, day) {
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => _pickCalendarDate(firstDay, lastDay),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${day.month}월',
+                            style: forestringTextStyle.copyWith(
+                              color: primaryColor,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: primaryColor,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
                 dowBuilder: (context, day) {
                   final label = _weekdayLabels[day.weekday - 1];
                   return Center(
