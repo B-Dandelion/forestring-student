@@ -73,10 +73,14 @@ class _LoginPageState extends State<LoginPage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ConstrainedBox(
+            return GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight,
                 ),
@@ -249,6 +253,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 30),
                   ],
+                  ),
                 ),
               ),
             );
