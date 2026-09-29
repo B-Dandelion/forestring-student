@@ -618,8 +618,8 @@ class _StudentMyPageState extends State<StudentMyPage> {
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        DateFormat('M월 d일 EEEE', 'ko_KR')
-                            .format(lesson.startsAt),
+                        '${DateFormat('M월 d일').format(lesson.startsAt)} '
+                        '${_weekdayLabel(lesson.startsAt)}',
                         style: forestringTextStyle.copyWith(
                           color: Colors.black87,
                           fontSize: 18,
@@ -1176,6 +1176,19 @@ class _StudentMyPageState extends State<StudentMyPage> {
         style: forestringTextStyle.copyWith(color: Colors.black54),
       ),
     );
+  }
+
+  String _weekdayLabel(DateTime date) {
+    const labels = [
+      '월요일',
+      '화요일',
+      '수요일',
+      '목요일',
+      '금요일',
+      '토요일',
+      '일요일',
+    ];
+    return labels[date.weekday - 1];
   }
 
   String _semesterShortTitle(String code) {
