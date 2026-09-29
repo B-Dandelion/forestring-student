@@ -315,35 +315,19 @@ class _StudentMyPageState extends State<StudentMyPage> {
         )
         .toList();
 
-    final baseCount = baseRights.length;
     final carryoverCount = semester.rights
         .where((right) => right.origin == 'carryover')
         .length;
-    final countedStudentCancellations = baseRights.fold<int>(
-      0,
-      (sum, right) =>
-          sum +
-          right.cancellations
-              .where(
-                (event) =>
-                    event.origin == 'student' && event.countsTowardLimit,
-              )
-              .length,
-    );
-    final cancellationLimit = (baseCount ~/ 4) * 2;
-    final remainingCancellations =
-        cancellationLimit > countedStudentCancellations
-            ? cancellationLimit - countedStudentCancellations
-            : 0;
     final availableCount = semester.rights
         .where((right) => right.status == 'available')
         .length;
 
     return _SemesterMetrics(
-      baseCount: baseCount,
+      baseCount: baseRights.length,
       availableCount: availableCount,
       reservedCount: semester.reservedRights,
-      remainingCancellations: remainingCancellations,
+      remainingCancellations:
+          semester.cancellationQuota?.remainingCancellations,
       carryoverCount: carryoverCount,
     );
   }
@@ -478,8 +462,9 @@ class _StudentMyPageState extends State<StudentMyPage> {
                               child: _metricCell(
                                 icon: Icons.cancel_outlined,
                                 label: '취소 가능 횟수',
-                                value:
-                                    '${metrics.remainingCancellations}회',
+                                value: metrics.remainingCancellations == null
+                                    ? '확인 불가'
+                                    : '${metrics.remainingCancellations}회',
                               ),
                             ),
                             _metricDivider(),
@@ -721,40 +706,26 @@ class _StudentMyPageState extends State<StudentMyPage> {
     final carryoverCount = semester.rights
         .where((right) => right.origin == 'carryover')
         .length;
-    final countedStudentCancellations = baseRights.fold<int>(
-      0,
-      (sum, right) =>
-          sum +
-          right.cancellations
-              .where(
-                (event) =>
-                    event.origin == 'student' && event.countsTowardLimit,
-              )
-              .length,
-    );
-    final cancellationLimit = history.isRegular
-        ? (baseCount ~/ 4) * 2
-        : (baseCount ~/ 4) * 2;
-    final remainingCancellations =
-        cancellationLimit > countedStudentCancellations
-            ? cancellationLimit - countedStudentCancellations
-            : 0;
     final availableCount = semester.rights
         .where((right) => right.status == 'available')
         .length;
+    final quota = semester.cancellationQuota;
+    final cancellationLabel = quota == null
+        ? '확인 불가'
+        : '${quota.remainingCancellations}회';
 
     final chips = history.isRegular
         ? <String>[
             '예약 가능 수업권 $availableCount개',
             '예약된 수업 ${semester.reservedRights}개',
-            '취소 가능 $remainingCancellations회',
+            '취소 가능 $cancellationLabel',
             '보강 수업권 ${carryoverCount == 0 ? '없음' : '$carryoverCount개'}',
           ]
         : <String>[
             '기본 수업권 $baseCount개',
             '예약 가능 수업권 $availableCount개',
             '예약된 수업 ${semester.reservedRights}개',
-            '취소 가능 $remainingCancellations회',
+            '취소 가능 $cancellationLabel',
             '보강 수업권 ${carryoverCount == 0 ? '없음' : '$carryoverCount개'}',
           ];
 
@@ -829,59 +800,21 @@ class _StudentMyPageState extends State<StudentMyPage> {
           : a.sequenceNo.compareTo(b.sequenceNo);
     });
 
-    final rebookedRights = rights.where((right) => right.isRebooked).toList()
-      ..sort((a, b) {
-        final aDate = a.currentStartsAt;
-        final bDate = b.currentStartsAt;
-        if (aDate == null && bDate == null) {
-          return a.sequenceNo.compareTo(b.sequenceNo);
-        }
-        if (aDate == null) return 1;
-        if (bDate == null) return -1;
-        final dateComparison = aDate.compareTo(bDate);
-        return dateComparison != 0
-            ? dateComparison
-            : a.sequenceNo.compareTo(b.sequenceNo);
-      });
-
-    final originalCards = <Widget>[];
-
-    for (final right in rights) {
-      if (right.lesson != null) {
-        originalCards.add(
-          _originalCard(
+    final cards = rights
+        .where((right) => right.lesson != null)
+        .map(
+          (right) => _lessonHistoryCard(
             history,
             right,
             history.isRegular ? '정규 수업' : '예약 수업',
           ),
-        );
-      }
-    }
-
-    final rebookCards = rebookedRights
-        .map((right) => _rebookCard(history, right))
+        )
         .toList();
 
-    if (originalCards.isEmpty && rebookCards.isEmpty) {
+    if (cards.isEmpty) {
       return [_emptyCard('아직 등록된 수업 내역이 없습니다.')];
     }
-
-    return [
-      ...originalCards,
-      if (rebookCards.isNotEmpty) ...[
-        const SizedBox(height: 10),
-        Text(
-          '재예약 내역',
-          style: forestringTextStyle.copyWith(
-            color: secondaryColor,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...rebookCards,
-      ],
-    ];
+    return cards;
   }
 
   DateTime? _originalCardDate(LessonRightHistory right) {
@@ -889,173 +822,217 @@ class _StudentMyPageState extends State<StudentMyPage> {
     if (lesson == null) {
       return null;
     }
-
-    final staffChanged = !right.wasCanceled && lesson.isAcademyChanged;
-    return staffChanged
-        ? lesson.startsAt
-        : right.originalStartsAt ?? lesson.startsAt;
+    return right.originalStartsAt ?? lesson.startsAt;
   }
 
-  Widget _originalCard(
+  Widget _lessonHistoryCard(
     LessonHistoryData history,
     LessonRightHistory right,
     String title,
   ) {
     final lesson = right.lesson!;
-    final originalStart = right.originalStartsAt ?? lesson.startsAt;
-    final originalEnd = originalStart.add(
-      Duration(minutes: right.durationMinutes),
-    );
-    final cancellations = [...right.cancellations]
-      ..sort((a, b) => a.canceledAt.compareTo(b.canceledAt));
-    final canceled = right.wasCanceled;
-    final staffChanged = !canceled && lesson.isAcademyChanged;
-    final displayStart = staffChanged ? lesson.startsAt : originalStart;
-    final displayEnd = staffChanged ? lesson.endsAt : originalEnd;
+    final canceled = lesson.isCanceled;
+    final rebooked = right.isRebooked;
+    final staffChanged = !canceled && !rebooked && lesson.isAcademyChanged;
 
-    Widget? footer;
-    if (cancellations.isNotEmpty) {
-      footer = Column(
-        children: List.generate(
-          cancellations.length,
-          (index) => _cancellationHistoryItem(
-            history,
-            right,
-            cancellations[index],
-            index,
-          ),
-        ),
-      );
-    } else if (staffChanged && lesson.updatedAt != null) {
-      footer = Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: secondaryColor.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          '학원 관리자 · '
-          '${DateFormat('M월 d일 HH:mm').format(lesson.updatedAt!)} 변경',
-          style: forestringTextStyle.copyWith(
-            color: secondaryColor,
-            fontSize: 11,
-          ),
-        ),
-      );
-    }
+    final statusLabel = canceled
+        ? '취소됨'
+        : rebooked
+            ? '재예약'
+            : staffChanged
+                ? '변경'
+                : null;
+    final statusColor = rebooked || staffChanged
+        ? secondaryColor
+        : primaryColor;
+
+    final visibleActivities = [...right.activities]
+      ..sort((a, b) => a.eventAt.compareTo(b.eventAt));
+    final showTimeline = visibleActivities.length > 1;
 
     return StudentLessonHistoryCard(
       title: title,
-      startsAt: displayStart,
-      endsAt: displayEnd,
+      startsAt: lesson.startsAt,
+      endsAt: lesson.endsAt,
       teacherName: lesson.teacherName,
-      statusLabel: canceled
-          ? '취소됨'
-          : staffChanged
-              ? '변경'
-              : null,
-      statusColor: staffChanged ? secondaryColor : primaryColor,
+      statusLabel: statusLabel,
+      statusColor: statusColor,
       isCanceled: canceled,
-      footer: footer,
+      footer: showTimeline
+          ? _activityTimeline(history, visibleActivities)
+          : null,
     );
   }
 
-  Widget _cancellationHistoryItem(
+  Widget _activityTimeline(
     LessonHistoryData history,
-    LessonRightHistory right,
-    LessonCancellationHistory cancellation,
-    int index,
+    List<LessonActivityHistory> activities,
   ) {
-    final lessonStartsAt = cancellation.lessonStartsAt;
-    final lessonEndsAt = lessonStartsAt?.add(
-      Duration(
-        minutes: cancellation.lessonDurationMinutes ?? right.durationMinutes,
-      ),
-    );
-    final lessonTimeLabel = lessonStartsAt == null || lessonEndsAt == null
-        ? null
-        : '${DateFormat('M월 d일 HH:mm').format(lessonStartsAt)} ~ '
-              '${DateFormat('HH:mm').format(lessonEndsAt)}';
-
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.only(
-        bottom: index == right.cancellations.length - 1 ? 0 : 6,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.05),
+        color: const Color(0xffF8F8F5),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${index + 1}차 취소'
-            '${lessonTimeLabel == null ? '' : ' · $lessonTimeLabel'}',
-            style: forestringTextStyle.copyWith(
-              color: Colors.black54,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          for (var i = 0; i < activities.length; i++)
+            _activityTimelineItem(
+              history,
+              activities[i],
+              isLast: i == activities.length - 1,
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${cancellation.actorLabel(history.studentId)} · '
-            '${DateFormat('M월 d일 HH:mm').format(cancellation.canceledAt)} 취소',
-            style: forestringTextStyle.copyWith(
-              color: Colors.redAccent,
-              fontSize: 12,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _rebookCard(
+  Widget _activityTimelineItem(
     LessonHistoryData history,
-    LessonRightHistory right,
-  ) {
-    final lesson = right.lesson!;
-    final reservedAt = right.reservedAt;
+    LessonActivityHistory activity, {
+    required bool isLast,
+  }) {
+    final color = activity.isCancellation
+        ? Colors.redAccent
+        : activity.isRebooking
+            ? secondaryColor
+            : primaryColor;
+    final label = _activityLabel(activity);
+    final scheduleText = _activityScheduleText(activity);
+    final actorText = activity.actorLabel(history.studentId);
+    final actionTime = DateFormat('M월 d일 HH:mm').format(activity.eventAt);
 
-    Widget? footer;
-    if (reservedAt != null) {
-      footer = Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: secondaryColor.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          '${right.bookingActorLabel(history.studentId)} · '
-          '${DateFormat('M월 d일 HH:mm').format(reservedAt)} 재예약',
-          style: forestringTextStyle.copyWith(
-            color: secondaryColor,
-            fontSize: 11,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 18,
+          child: Column(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(top: 5),
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              if (!isLast)
+                Container(
+                  width: 1,
+                  height: 38,
+                  margin: const EdgeInsets.only(top: 3),
+                  color: Colors.black.withValues(alpha: 0.10),
+                ),
+            ],
           ),
         ),
-      );
+        const SizedBox(width: 7),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: forestringTextStyle.copyWith(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (scheduleText != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    scheduleText,
+                    style: forestringTextStyle.copyWith(
+                      color: Colors.black54,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 2),
+                Text(
+                  '$actorText · $actionTime',
+                  style: forestringTextStyle.copyWith(
+                    color: Colors.black38,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _activityLabel(LessonActivityHistory activity) {
+    if (activity.isOriginalSchedule) {
+      return '원래 일정';
+    }
+    if (activity.isCancellation) {
+      return activity.details['cancellationOrigin']?.toString() == 'student'
+          ? '학생 취소'
+          : '학원 취소';
+    }
+    if (activity.isBooking) {
+      return activity.isRebooking ? '재예약' : '예약';
+    }
+    if (activity.isManualUpdate) {
+      return '일정 변경';
+    }
+    if (activity.isMakeupCreated) {
+      return '보강 등록';
+    }
+    return '처리';
+  }
+
+  String? _activityScheduleText(LessonActivityHistory activity) {
+    if (activity.isManualUpdate) {
+      final before = _mapValue(activity.details['before']);
+      final after = _mapValue(activity.details['after']);
+      final beforeStart = _parseActivityDate(before['startsAt']);
+      final afterStart = _parseActivityDate(after['startsAt']);
+      if (beforeStart == null && afterStart == null) {
+        return null;
+      }
+      final beforeText = beforeStart == null
+          ? '기존 일정'
+          : DateFormat('M월 d일 HH:mm').format(beforeStart);
+      final afterText = afterStart == null
+          ? '변경 일정'
+          : DateFormat('M월 d일 HH:mm').format(afterStart);
+      return '$beforeText → $afterText';
     }
 
-    return StudentLessonHistoryCard(
-      title: '재예약 수업',
-      startsAt: lesson.startsAt,
-      endsAt: lesson.endsAt,
-      teacherName: lesson.teacherName,
-      statusLabel: '재예약',
-      statusColor: secondaryColor,
-      footer: footer,
-    );
+    final startsAt = activity.startsAt;
+    final endsAt = activity.endsAt;
+    if (startsAt == null) {
+      return null;
+    }
+    if (endsAt == null) {
+      return DateFormat('M월 d일 HH:mm').format(startsAt);
+    }
+    return '${DateFormat('M월 d일 HH:mm').format(startsAt)} ~ '
+        '${DateFormat('HH:mm').format(endsAt)}';
+  }
+
+  Map<String, dynamic> _mapValue(dynamic value) {
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+    return const {};
+  }
+
+  DateTime? _parseActivityDate(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    return DateTime.tryParse(value.toString())?.toLocal();
   }
 
   Widget _pastTile(
@@ -1187,6 +1164,6 @@ class _SemesterMetrics {
   final int baseCount;
   final int availableCount;
   final int reservedCount;
-  final int remainingCancellations;
+  final int? remainingCancellations;
   final int carryoverCount;
 }
