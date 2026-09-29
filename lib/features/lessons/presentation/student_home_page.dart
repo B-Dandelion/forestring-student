@@ -345,21 +345,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final lastDay = controller.calendarLastDay;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF4F1E8),
+      backgroundColor: Colors.white,
       appBar: const StudentAppBar(title: '일정'),
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xffF4F1E8),
-              Color(0xffEEF3E9),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: RefreshIndicator(
+      body: SafeArea(
+        child: RefreshIndicator(
           onRefresh: controller.refreshAll,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -411,7 +400,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ),
               ),
             ],
-            ),
           ),
         ),
       ),
