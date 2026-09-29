@@ -177,18 +177,18 @@ class StudentLessonHistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accentColor =
-        isCanceled ? const Color(0xff9B7474) : statusColor;
+        isCanceled ? const Color(0xff657783) : statusColor;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
         color: isCanceled
-            ? const Color(0xffFAF7F5)
+            ? const Color(0xffF2F5F6)
             : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCanceled
-              ? const Color(0xff9B7474).withValues(alpha: 0.18)
+              ? const Color(0xff657783).withValues(alpha: 0.18)
               : primaryColor.withValues(alpha: 0.10),
         ),
       ),
@@ -276,7 +276,7 @@ class StudentLessonHistoryCard extends StatelessWidget {
                                     _historyBadge(
                                       statusLabel!,
                                       isCanceled
-                                          ? const Color(0xff8E5F5F)
+                                          ? const Color(0xff556B78)
                                           : statusColor,
                                     ),
                                   ],
