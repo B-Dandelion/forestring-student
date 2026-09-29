@@ -722,83 +722,80 @@ class _StudentMyPageState extends State<StudentMyPage> {
     LessonHistoryData history,
     SemesterLessonHistory semester,
   ) {
-    final baseRights = semester.rights
-        .where(
-          (right) => history.isRegular
-              ? right.origin == 'regular_base'
-              : right.origin == 'flex_base',
-        )
-        .toList();
-    final baseCount = baseRights.length;
     final carryoverCount = semester.rights
         .where((right) => right.origin == 'carryover')
         .length;
     final availableCount = semester.rights
         .where((right) => right.status == 'available')
         .length;
-    final quota = semester.cancellationQuota;
-    final cancellationLabel = quota == null
+    final cancellationLabel = semester.cancellationQuota == null
         ? '확인 불가'
-        : '${quota.remainingCancellations}회';
+        : '${semester.cancellationQuota!.remainingCancellations}회';
 
-    final chips = history.isRegular
-        ? <String>[
-            '예약 가능 수업권 $availableCount개',
-            '예약된 수업 ${semester.reservedRights}개',
-            '취소 가능 $cancellationLabel',
-            '보강 수업권 ${carryoverCount == 0 ? '없음' : '$carryoverCount개'}',
-          ]
-        : <String>[
-            '기본 수업권 $baseCount개',
-            '예약 가능 수업권 $availableCount개',
-            '예약된 수업 ${semester.reservedRights}개',
-            '취소 가능 $cancellationLabel',
-            '보강 수업권 ${carryoverCount == 0 ? '없음' : '$carryoverCount개'}',
-          ];
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ivoryColor,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _semesterTitle(semester.code),
-            style: forestringTextStyle.copyWith(
-              color: primaryColor,
-              fontSize: 17,
-              fontWeight: FontWeight.w500,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${DateFormat('M월 d일').format(semester.startsOn)} ~ '
+          '${DateFormat('M월 d일').format(semester.endsOn)}',
+          style: forestringTextStyle.copyWith(
+            color: Colors.black54,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _metricCell(
+                icon: Icons.calendar_month_rounded,
+                label: '예약된 수업',
+                value: '${semester.reservedRights}회',
+                backgroundColor: const Color(0xffEDF5ED),
+                iconBackgroundColor: const Color(0xffDCEBDD),
+                iconColor: const Color(0xff477253),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${DateFormat('M월 d일').format(semester.startsOn)} ~ '
-            '${DateFormat('M월 d일').format(semester.endsOn)}',
-            style: forestringTextStyle.copyWith(
-              color: Colors.black54,
-              fontSize: 13,
+            const SizedBox(width: 8),
+            Expanded(
+              child: _metricCell(
+                icon: Icons.confirmation_number_outlined,
+                label: '남은 수업권',
+                value: '${availableCount}개',
+                backgroundColor: const Color(0xffFBF3E3),
+                iconBackgroundColor: const Color(0xffF6E2B7),
+                iconColor: const Color(0xff98651B),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: chips
-                .map(
-                  (text) => _pill(
-                    text,
-                    Colors.white,
-                    Colors.black87,
-                    borderColor: primaryColor.withValues(alpha: 0.18),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _metricCell(
+                icon: Icons.cancel_outlined,
+                label: '취소 가능 횟수',
+                value: cancellationLabel,
+                backgroundColor: const Color(0xffEEF2F4),
+                iconBackgroundColor: const Color(0xffDDE5E9),
+                iconColor: const Color(0xff657783),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _metricCell(
+                icon: Icons.school_outlined,
+                label: '보강 수업권',
+                value: carryoverCount == 0 ? '없음' : '${carryoverCount}개',
+                backgroundColor: const Color(0xffF0F1EF),
+                iconBackgroundColor: const Color(0xffDFE1DE),
+                iconColor: const Color(0xff59615B),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
