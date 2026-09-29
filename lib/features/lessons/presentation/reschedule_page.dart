@@ -129,6 +129,7 @@ class _ReschedulePageState extends State<ReschedulePage>
       duration: duration,
       curve: Curves.easeInOutCubic,
       alignment: alignment,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
     );
   }
 
@@ -1025,10 +1026,10 @@ class _ReschedulePageState extends State<ReschedulePage>
                                     });
                                     _bringIntoView(
                                       _timeSectionKey,
-                                      delay: const Duration(milliseconds: 220),
+                                      delay: const Duration(milliseconds: 180),
                                       duration:
-                                          const Duration(milliseconds: 620),
-                                      alignment: 0.12,
+                                          const Duration(milliseconds: 420),
+                                      alignment: 0.68,
                                     );
                                     _loadOptions(selectedRight, selectedDay);
                                   },
@@ -1197,7 +1198,6 @@ class _ReschedulePageState extends State<ReschedulePage>
                                         selectedRight == null
                                     ? const SizedBox.shrink()
                                     : Padding(
-                                        key: _timeSectionKey,
                                         padding:
                                             const EdgeInsets.only(top: 14),
                                         child: _sectionCard(
@@ -1206,6 +1206,7 @@ class _ReschedulePageState extends State<ReschedulePage>
                                           CrossAxisAlignment.start,
                                       children: [
                                         Row(
+                                          key: _timeSectionKey,
                                           children: [
                                             Container(
                                               width: 34,
