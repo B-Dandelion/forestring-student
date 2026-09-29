@@ -176,18 +176,19 @@ class StudentLessonHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = isCanceled ? Colors.black38 : statusColor;
+    final accentColor =
+        isCanceled ? const Color(0xff9B7474) : statusColor;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
         color: isCanceled
-            ? const Color(0xffF6F5F2)
+            ? const Color(0xffFAF7F5)
             : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCanceled
-              ? Colors.black.withValues(alpha: 0.10)
+              ? const Color(0xff9B7474).withValues(alpha: 0.18)
               : primaryColor.withValues(alpha: 0.10),
         ),
       ),
@@ -222,10 +223,8 @@ class StudentLessonHistoryCard extends StatelessWidget {
                               Text(
                                 DateFormat('M월 d일').format(startsAt),
                                 style: forestringTextStyle.copyWith(
-                                  color: isCanceled
-                                      ? Colors.black45
-                                      : Colors.black87,
-                                  fontSize: 14,
+                                  color: Colors.black87,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -234,9 +233,9 @@ class StudentLessonHistoryCard extends StatelessWidget {
                                 '${DateFormat('HH:mm').format(startsAt)} ~ ${DateFormat('HH:mm').format(endsAt)}',
                                 style: forestringTextStyle.copyWith(
                                   color: isCanceled
-                                      ? Colors.black38
+                                      ? Colors.black54
                                       : primaryColor,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   decoration: isCanceled
                                       ? TextDecoration.lineThrough
@@ -266,10 +265,8 @@ class StudentLessonHistoryCard extends StatelessWidget {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: forestringTextStyle.copyWith(
-                                        color: isCanceled
-                                            ? Colors.black45
-                                            : Colors.black87,
-                                        fontSize: 14,
+                                        color: Colors.black87,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -279,7 +276,7 @@ class StudentLessonHistoryCard extends StatelessWidget {
                                     _historyBadge(
                                       statusLabel!,
                                       isCanceled
-                                          ? Colors.black54
+                                          ? const Color(0xff8E5F5F)
                                           : statusColor,
                                     ),
                                   ],
@@ -289,8 +286,8 @@ class StudentLessonHistoryCard extends StatelessWidget {
                               Text(
                                 title,
                                 style: forestringTextStyle.copyWith(
-                                  color: Colors.black45,
-                                  fontSize: 11,
+                                  color: Colors.black54,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
