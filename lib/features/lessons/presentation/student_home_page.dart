@@ -6,11 +6,8 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../core/theme/forestring_theme.dart';
 import '../../../core/widgets/student_navigation.dart';
 import '../../auth/domain/current_profile.dart';
-import '../../auth/presentation/auth_controller.dart';
 import '../domain/lesson.dart';
 import 'lesson_controller.dart';
-import 'reschedule_page.dart';
-import 'student_my_page.dart';
 import 'widgets/lesson_action_dialog.dart';
 import 'widgets/lesson_card.dart';
 
@@ -72,38 +69,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     return Scaffold(
       appBar: const StudentAppBar(),
-      drawer: StudentDrawer(
-        displayName: widget.profile.displayName,
-        onHome: () => Navigator.of(context).pop(),
-        onReschedule: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ChangeNotifierProvider.value(
-                value: context.read<LessonController>(),
-                child: ReschedulePage(
-                  profile: widget.profile,
-                ),
-              ),
-            ),
-          );
-        },
-        onMyPage: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ChangeNotifierProvider.value(
-                value: context.read<LessonController>(),
-                child: StudentMyPage(profile: widget.profile),
-              ),
-            ),
-          );
-        },
-        onLogout: () async {
-          Navigator.of(context).pop();
-          await context.read<AuthController>().signOut();
-        },
-      ),
       body: SafeArea(
         child: Column(
           children: [
