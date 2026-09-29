@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../core/theme/forestring_theme.dart';
-import '../../../core/widgets/student_navigation.dart';
 import '../domain/lesson.dart';
 import 'lesson_controller.dart';
 import 'widgets/lesson_action_dialog.dart';
@@ -24,6 +23,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
   DateTime _focusedDate = DateTime.now();
 
   static const _weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+  static const _fullWeekdayLabels = [
+    '월요일',
+    '화요일',
+    '수요일',
+    '목요일',
+    '금요일',
+    '토요일',
+    '일요일',
+  ];
 
   Future<void> _pickCalendarDate(
     DateTime firstDay,
@@ -56,6 +64,314 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
   }
 
+  Widget _calendarCard(
+    LessonController controller,
+    DateTime firstDay,
+    DateTime lastDay,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.07),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+      child: TableCalendar<Lesson>(
+        firstDay: firstDay,
+        lastDay: lastDay,
+        focusedDay: _focusedDate,
+        startingDayOfWeek: StartingDayOfWeek.sunday,
+        selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+        eventLoader: controller.lessonsOn,
+        onDaySelected: (selectedDay, focusedDay) {
+          setState(() {
+            _selectedDate = selectedDay;
+            _focusedDate = focusedDay;
+          });
+        },
+        onPageChanged: (focusedDay) {
+          _focusedDate = focusedDay;
+        },
+        rowHeight: 48,
+        daysOfWeekHeight: 34,
+        headerStyle: HeaderStyle(
+          titleCentered: true,
+          formatButtonVisible: false,
+          leftChevronMargin: const EdgeInsets.only(left: 4),
+          rightChevronMargin: const EdgeInsets.only(right: 4),
+          leftChevronIcon: Container(
+            width: 34,
+            height: 34,
+            decoration: const BoxDecoration(
+              color: Color(0xffF3F6EF),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              color: primaryColor,
+              size: 22,
+            ),
+          ),
+          rightChevronIcon: Container(
+            width: 34,
+            height: 34,
+            decoration: const BoxDecoration(
+              color: Color(0xffF3F6EF),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.chevron_right_rounded,
+              color: primaryColor,
+              size: 22,
+            ),
+          ),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'ELAND',
+            fontWeight: FontWeight.w500,
+            fontSize: 19,
+            color: primaryColor,
+          ),
+        ),
+        calendarStyle: CalendarStyle(
+          outsideDaysVisible: false,
+          cellMargin: const EdgeInsets.all(5),
+          todayDecoration: const BoxDecoration(
+            color: Color(0xffE7EFE4),
+            shape: BoxShape.circle,
+          ),
+          todayTextStyle: const TextStyle(
+            color: primaryColor,
+            fontFamily: 'ELAND',
+            fontWeight: FontWeight.w500,
+          ),
+          selectedDecoration: const BoxDecoration(
+            color: primaryColor,
+            shape: BoxShape.circle,
+          ),
+          selectedTextStyle: const TextStyle(
+            color: Colors.white,
+            fontFamily: 'ELAND',
+            fontWeight: FontWeight.w500,
+          ),
+          defaultTextStyle: forestringTextStyle.copyWith(
+            color: Colors.black87,
+            fontSize: 14,
+          ),
+          weekendTextStyle: forestringTextStyle.copyWith(
+            color: Colors.black87,
+            fontSize: 14,
+          ),
+          markerDecoration: const BoxDecoration(
+            color: secondaryColor,
+            shape: BoxShape.circle,
+          ),
+          markerSize: 5,
+          markersMaxCount: 1,
+          markersAlignment: Alignment.bottomCenter,
+          markerMargin: const EdgeInsets.only(top: 1),
+        ),
+        calendarBuilders: CalendarBuilders(
+          headerTitleBuilder: (context, day) {
+            return Center(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _pickCalendarDate(firstDay, lastDay),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${day.year}년 ${day.month}월',
+                        style: forestringTextStyle.copyWith(
+                          color: primaryColor,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: primaryColor,
+                        size: 19,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          dowBuilder: (context, day) {
+            final label = _weekdayLabels[day.weekday - 1];
+            final color = day.weekday == DateTime.sunday
+                ? Colors.redAccent
+                : day.weekday == DateTime.saturday
+                    ? Colors.blueAccent
+                    : Colors.black45;
+
+            return Center(
+              child: Text(
+                label,
+                style: forestringTextStyle.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _lessonSectionHeader(int lessonCount) {
+    final weekday = _fullWeekdayLabels[_selectedDate.weekday - 1];
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '${DateFormat('M월 d일').format(_selectedDate)} $weekday',
+            style: forestringTextStyle.copyWith(
+              color: Colors.black87,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 5,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xffE7EFE4),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            '$lessonCount개 수업',
+            style: forestringTextStyle.copyWith(
+              color: primaryColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _emptyLessonCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 30,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.07),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: Color(0xffF1F5ED),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.event_available_outlined,
+              color: primaryColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '예약된 수업이 없습니다.',
+            style: forestringTextStyle.copyWith(
+              color: Colors.black45,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _lessonContent(
+    BuildContext context,
+    LessonController controller,
+    List<Lesson> selectedLessons,
+  ) {
+    final lessons = [...selectedLessons]
+      ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOutCubic,
+      transitionBuilder: (child, animation) {
+        final offset = Tween<Offset>(
+          begin: const Offset(0.04, 0),
+          end: Offset.zero,
+        ).animate(animation);
+
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: offset,
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        key: ValueKey<String>(
+          '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}',
+        ),
+        child: controller.isLoading && controller.lessons.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.symmetric(vertical: 54),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            : lessons.isEmpty
+                ? _emptyLessonCard()
+                : Column(
+                    children: [
+                      for (var i = 0; i < lessons.length; i++) ...[
+                        StudentLessonCard(
+                          lesson: lessons[i],
+                          onTap: () => showStudentLessonDialog(
+                            context: context,
+                            lesson: lessons[i],
+                            controller: context.read<LessonController>(),
+                          ),
+                        ),
+                        if (i != lessons.length - 1)
+                          const SizedBox(height: 10),
+                      ],
+                    ],
+                  ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<LessonController>();
@@ -64,189 +380,62 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final lastDay = controller.calendarLastDay;
 
     return Scaffold(
-      appBar: const StudentAppBar(),
+      backgroundColor: const Color(0xffF8F6F0),
+      appBar: AppBar(
+        backgroundColor: const Color(0xffF8F6F0),
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          '일정',
+          style: forestringTextStyle.copyWith(
+            color: primaryColor,
+            fontSize: 21,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            TableCalendar<Lesson>(
-              firstDay: firstDay,
-              lastDay: lastDay,
-              focusedDay: _focusedDate,
-              startingDayOfWeek: StartingDayOfWeek.sunday,
-              selectedDayPredicate: (day) =>
-                  isSameDay(_selectedDate, day),
-              eventLoader: controller.lessonsOn,
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDate = selectedDay;
-                  _focusedDate = focusedDay;
-                });
-              },
-              onPageChanged: (focusedDay) {
-                _focusedDate = focusedDay;
-              },
-              headerStyle: HeaderStyle(
-                titleCentered: true,
-                formatButtonVisible: false,
-                titleTextFormatter: (date, locale) => '${date.month}월',
-                leftChevronIcon: const Icon(
-                  Icons.chevron_left,
-                  color: primaryColor,
-                ),
-                rightChevronIcon: const Icon(
-                  Icons.chevron_right,
-                  color: primaryColor,
-                ),
-                titleTextStyle: const TextStyle(
-                  fontFamily: 'ELAND',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 22,
-                  color: primaryColor,
-                ),
-              ),
-              calendarStyle: const CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: BoxDecoration(
-                  color: secondaryColor,
-                  shape: BoxShape.circle,
-                ),
-                markerDecoration: BoxDecoration(
-                  color: Color(0xff2E8B57),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              calendarBuilders: CalendarBuilders(
-                headerTitleBuilder: (context, day) {
-                  return Center(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
-                      onTap: () => _pickCalendarDate(firstDay, lastDay),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${day.month}월',
-                              style: forestringTextStyle.copyWith(
-                                color: primaryColor,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: primaryColor,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
+        child: RefreshIndicator(
+          onRefresh: controller.refreshAll,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 30),
+            children: [
+              _calendarCard(controller, firstDay, lastDay),
+              const SizedBox(height: 24),
+              _lessonSectionHeader(selectedLessons.length),
+              const SizedBox(height: 12),
+              if (controller.errorMessage != null) ...[
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 11,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    controller.errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: forestringTextStyle.copyWith(
+                      color: Colors.redAccent,
+                      fontSize: 12,
                     ),
-                  );
-                },
-                dowBuilder: (context, day) {
-                  final label = _weekdayLabels[day.weekday - 1];
-                  return Center(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontFamily: 'ELAND',
-                        fontWeight: FontWeight.w500,
-                        color: day.weekday == DateTime.sunday
-                            ? Colors.red
-                            : day.weekday == DateTime.saturday
-                                ? Colors.blue
-                                : Colors.black,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(12, 6, 12, 8),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: ivoryColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${DateFormat('M월 d일').format(_selectedDate)} · '
-                '${selectedLessons.length}개 수업',
-                style: forestringTextStyle.copyWith(
-                  color: primaryColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            if (controller.errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  controller.errorMessage!,
-                  style: forestringTextStyle.copyWith(
-                    color: Colors.redAccent,
                   ),
                 ),
+              ],
+              _lessonContent(
+                context,
+                controller,
+                selectedLessons,
               ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: controller.refreshAll,
-                child: controller.isLoading && controller.lessons.isEmpty
-                    ? ListView(
-                        children: const [
-                          SizedBox(height: 120),
-                          Center(child: CircularProgressIndicator()),
-                        ],
-                      )
-                    : selectedLessons.isEmpty
-                        ? ListView(
-                            padding: const EdgeInsets.all(24),
-                            children: [
-                              const SizedBox(height: 70),
-                              Text(
-                                '예약된 수업이 없습니다.',
-                                textAlign: TextAlign.center,
-                                style: forestringTextStyle.copyWith(
-                                  color: Colors.black54,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-                            itemCount: selectedLessons.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final lesson = selectedLessons[index];
-                              return StudentLessonCard(
-                                lesson: lesson,
-                                onTap: () => showStudentLessonDialog(
-                                  context: context,
-                                  lesson: lesson,
-                                  controller:
-                                      context.read<LessonController>(),
-                                ),
-                              );
-                            },
-                          ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
