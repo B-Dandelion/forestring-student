@@ -106,7 +106,7 @@ class ReviewLessonRepository extends LessonRepository {
   }
 
   @override
-  Future<DateTime?> fetchEnrollmentStartDate() async {
+  Future<DateTime?> fetchCalendarStartDate() async {
     if (_semesters.isEmpty) {
       return null;
     }
