@@ -422,202 +422,226 @@ class _ReschedulePageState extends State<ReschedulePage> {
                       ],
                     ),
                   )
-                : Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-                        child: DropdownButtonFormField<String>(
-                          initialValue: selectedRight?.id,
-                          decoration: const InputDecoration(
-                            labelText: '수업권 선택',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: rights
-                              .asMap()
-                              .entries
-                              .map(
-                                (entry) => DropdownMenuItem<String>(
-                                  value: entry.value.id,
-                                  child: Text(
-                                    '수업권 ${entry.key + 1}',
-                                    style: forestringTextStyle,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: _loadingWindow || _booking
-                              ? null
-                              : (id) {
-                                  if (id == null) {
-                                    return;
-                                  }
-                                  final right = rights.firstWhere(
-                                    (item) => item.id == id,
-                                  );
-                                  _selectRight(right);
-                                },
-                        ),
-                      ),
-                  if (_loadingWindow)
-                    const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (_window != null && selectedRight != null) ...[
-                    TableCalendar<void>(
-                      firstDay: _dateOnly(_window!.startsOn),
-                      lastDay: _dateOnly(_window!.endsOn),
-                      focusedDay: _focusedDate,
-                      startingDayOfWeek: StartingDayOfWeek.sunday,
-                      selectedDayPredicate: (day) =>
-                          isSameDay(_selectedDate, day),
-                      onDaySelected: (selectedDay, focusedDay) {
-                        setState(() {
-                          _selectedDate = selectedDay;
-                          _focusedDate = focusedDay;
-                        });
-                        _loadOptions(selectedRight, selectedDay);
-                      },
-                      onPageChanged: (focusedDay) {
-                        _focusedDate = focusedDay;
-                      },
-                      headerStyle: HeaderStyle(
-                        titleCentered: true,
-                        formatButtonVisible: false,
-                        titleTextFormatter: (date, locale) => '${date.month}월',
-                        leftChevronIcon: const Icon(
-                          Icons.chevron_left,
-                          color: primaryColor,
-                        ),
-                        rightChevronIcon: const Icon(
-                          Icons.chevron_right,
-                          color: primaryColor,
-                        ),
-                        titleTextStyle: const TextStyle(
-                          fontFamily: 'ELAND',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 22,
-                          color: primaryColor,
-                        ),
-                      ),
-                      calendarStyle: const CalendarStyle(
-                        todayDecoration: BoxDecoration(
-                          color: primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        selectedDecoration: BoxDecoration(
-                          color: secondaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      calendarBuilders: CalendarBuilders(
-                        dowBuilder: (context, day) {
-                          final label = _weekdayLabels[day.weekday - 1];
-                          return Center(
-                            child: Text(
-                              label,
-                              style: TextStyle(
-                                fontFamily: 'ELAND',
-                                fontWeight: FontWeight.w500,
-                                color: day.weekday == DateTime.sunday
-                                    ? Colors.red
-                                    : day.weekday == DateTime.saturday
-                                        ? Colors.blue
-                                        : Colors.black,
-                              ),
+                : RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedRight?.id,
+                            decoration: const InputDecoration(
+                              labelText: '수업권 선택',
+                              border: OutlineInputBorder(),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ivoryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${DateFormat('M월 d일').format(_selectedDate)} 예약 가능 시간',
-                        style: forestringTextStyle.copyWith(
-                          color: primaryColor,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: _loadingOptions
-                          ? const Center(child: CircularProgressIndicator())
-                          : _errorMessage != null
-                              ? Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24),
+                            items: rights
+                                .asMap()
+                                .entries
+                                .map(
+                                  (entry) => DropdownMenuItem<String>(
+                                    value: entry.value.id,
                                     child: Text(
-                                      _errorMessage!,
-                                      textAlign: TextAlign.center,
-                                      style: forestringTextStyle.copyWith(
-                                        color: Colors.redAccent,
-                                      ),
+                                      '수업권 ${entry.key + 1}',
+                                      style: forestringTextStyle,
                                     ),
                                   ),
                                 )
-                              : _options.isEmpty
-                                  ? Center(
-                                      child: Text(
-                                        '예약 가능한 시간이 없습니다.',
-                                        style: forestringTextStyle.copyWith(
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                    )
-                                  : ListView(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        14,
-                                        8,
-                                        14,
-                                        24,
-                                      ),
-                                      children: [
-                                        _timeGroup(
-                                          '오전',
-                                          _options
-                                              .where(
-                                                (option) =>
-                                                    option.startsAt.hour < 12,
-                                              )
-                                              .toList(),
-                                          selectedRight,
-                                        ),
-                                        _timeGroup(
-                                          '오후',
-                                          _options
-                                              .where(
-                                                (option) =>
-                                                    option.startsAt.hour >= 12,
-                                              )
-                                              .toList(),
-                                          selectedRight,
-                                        ),
-                                      ],
-                                    ),
-                    ),
-                  ] else
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          _errorMessage ?? '예약 정보를 불러오지 못했습니다.',
-                          style: forestringTextStyle.copyWith(
-                            color: Colors.redAccent,
+                                .toList(),
+                            onChanged: _loadingWindow || _booking
+                                ? null
+                                : (id) {
+                                    if (id == null) {
+                                      return;
+                                    }
+                                    final right = rights.firstWhere(
+                                      (item) => item.id == id,
+                                    );
+                                    _selectRight(right);
+                                  },
                           ),
                         ),
-                      ),
+                        if (_loadingWindow)
+                          const SizedBox(
+                            height: 320,
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        else if (_window != null && selectedRight != null) ...[
+                          TableCalendar<void>(
+                            firstDay: _dateOnly(_window!.startsOn),
+                            lastDay: _dateOnly(_window!.endsOn),
+                            focusedDay: _focusedDate,
+                            startingDayOfWeek: StartingDayOfWeek.sunday,
+                            selectedDayPredicate: (day) =>
+                                isSameDay(_selectedDate, day),
+                            onDaySelected: (selectedDay, focusedDay) {
+                              setState(() {
+                                _selectedDate = selectedDay;
+                                _focusedDate = focusedDay;
+                              });
+                              _loadOptions(selectedRight, selectedDay);
+                            },
+                            onPageChanged: (focusedDay) {
+                              _focusedDate = focusedDay;
+                            },
+                            headerStyle: HeaderStyle(
+                              titleCentered: true,
+                              formatButtonVisible: false,
+                              titleTextFormatter: (date, locale) =>
+                                  '${date.month}월',
+                              leftChevronIcon: const Icon(
+                                Icons.chevron_left,
+                                color: primaryColor,
+                              ),
+                              rightChevronIcon: const Icon(
+                                Icons.chevron_right,
+                                color: primaryColor,
+                              ),
+                              titleTextStyle: const TextStyle(
+                                fontFamily: 'ELAND',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 22,
+                                color: primaryColor,
+                              ),
+                            ),
+                            calendarStyle: const CalendarStyle(
+                              todayDecoration: BoxDecoration(
+                                color: primaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                              selectedDecoration: BoxDecoration(
+                                color: secondaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            calendarBuilders: CalendarBuilders(
+                              dowBuilder: (context, day) {
+                                final label =
+                                    _weekdayLabels[day.weekday - 1];
+                                return Center(
+                                  child: Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontFamily: 'ELAND',
+                                      fontWeight: FontWeight.w500,
+                                      color:
+                                          day.weekday == DateTime.sunday
+                                              ? Colors.red
+                                              : day.weekday ==
+                                                      DateTime.saturday
+                                                  ? Colors.blue
+                                                  : Colors.black,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ivoryColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${DateFormat('M월 d일').format(_selectedDate)} '
+                              '예약 가능 시간',
+                              style: forestringTextStyle.copyWith(
+                                color: primaryColor,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          if (_loadingOptions)
+                            const SizedBox(
+                              height: 180,
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          else if (_errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Text(
+                                _errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: forestringTextStyle.copyWith(
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            )
+                          else if (_options.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 44,
+                              ),
+                              child: Text(
+                                '예약 가능한 시간이 없습니다.',
+                                textAlign: TextAlign.center,
+                                style: forestringTextStyle.copyWith(
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                14,
+                                8,
+                                14,
+                                0,
+                              ),
+                              child: Column(
+                                children: [
+                                  _timeGroup(
+                                    '오전',
+                                    _options
+                                        .where(
+                                          (option) =>
+                                              option.startsAt.hour < 12,
+                                        )
+                                        .toList(),
+                                    selectedRight,
+                                  ),
+                                  _timeGroup(
+                                    '오후',
+                                    _options
+                                        .where(
+                                          (option) =>
+                                              option.startsAt.hour >= 12,
+                                        )
+                                        .toList(),
+                                    selectedRight,
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ] else
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 80,
+                            ),
+                            child: Text(
+                              _errorMessage ?? '예약 정보를 불러오지 못했습니다.',
+                              textAlign: TextAlign.center,
+                              style: forestringTextStyle.copyWith(
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                ],
-              ),
+                  ),
       ),
     );
   }
