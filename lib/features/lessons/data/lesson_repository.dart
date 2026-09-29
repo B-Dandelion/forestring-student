@@ -33,7 +33,7 @@ class LessonRepository {
           .from('lessons')
           .select('starts_at')
           .eq('student_id', user.id)
-          .order('starts_at')
+          .order('starts_at', ascending: true)
           .limit(1);
 
       final list = rows as List;
@@ -51,7 +51,7 @@ class LessonRepository {
           .from('student_enrollment_periods')
           .select('starts_on')
           .eq('student_id', user.id)
-          .order('starts_on')
+          .order('starts_on', ascending: true)
           .limit(1);
 
       final list = rows as List;
@@ -94,7 +94,7 @@ class LessonRepository {
           .eq('student_id', user.id)
           .gte('starts_at', from.toUtc().toIso8601String())
           .lt('starts_at', to.toUtc().toIso8601String())
-          .order('starts_at');
+          .order('starts_at', ascending: true);
 
       final lessons = (rows as List)
           .map(
