@@ -207,7 +207,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               ),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: controller.reload,
+                onRefresh: controller.refreshAll,
                 child: controller.isLoading && controller.lessons.isEmpty
                     ? ListView(
                         children: const [
