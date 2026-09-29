@@ -397,8 +397,8 @@ class _ReschedulePageState extends State<ReschedulePage>
                 height: 1,
                 margin: const EdgeInsets.only(bottom: 20),
                 color: completed
-                    ? Colors.white.withValues(alpha: 0.85)
-                    : Colors.white.withValues(alpha: 0.24),
+                    ? primaryColor.withValues(alpha: 0.45)
+                    : Colors.black.withValues(alpha: 0.10),
               ),
             );
           }
@@ -420,43 +420,44 @@ class _ReschedulePageState extends State<ReschedulePage>
                           )
                         : 0.0;
 
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: active || completed
-                            ? Colors.white
-                            : Colors.black.withValues(alpha: 0.16),
-                        shape: BoxShape.circle,
-                        boxShadow: active
-                            ? [
-                                BoxShadow(
-                                  color: Colors.white.withValues(
-                                    alpha: 0.14 + (0.20 * pulse),
+                    return Transform.scale(
+                      scale: active ? 1 + (0.07 * pulse) : 1,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: active || completed
+                              ? primaryColor
+                              : Colors.black.withValues(alpha: 0.06),
+                          shape: BoxShape.circle,
+                          boxShadow: active
+                              ? [
+                                  BoxShadow(
+                                    color: primaryColor.withValues(
+                                      alpha: 0.16 + (0.22 * pulse),
+                                    ),
+                                    blurRadius: 9 + (13 * pulse),
+                                    spreadRadius: 1 + (4 * pulse),
                                   ),
-                                  blurRadius: 7 + (7 * pulse),
-                                  spreadRadius: 1 + (2 * pulse),
-                                ),
-                              ]
-                            : const [],
+                                ]
+                              : const [],
+                        ),
+                        alignment: Alignment.center,
+                        child: child,
                       ),
-                      alignment: Alignment.center,
-                      child: child,
                     );
                   },
                   child: completed
                       ? const Icon(
                           Icons.check_rounded,
-                          color: primaryColor,
+                          color: Colors.white,
                           size: 17,
                         )
                       : Text(
                           '${step}',
                           style: forestringTextStyle.copyWith(
-                            color: active
-                                ? primaryColor
-                                : Colors.white.withValues(alpha: 0.72),
+                            color: active ? Colors.white : Colors.black45,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -467,9 +468,7 @@ class _ReschedulePageState extends State<ReschedulePage>
                   labels[step - 1],
                   textAlign: TextAlign.center,
                   style: forestringTextStyle.copyWith(
-                    color: active
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.70),
+                    color: active ? primaryColor : Colors.black45,
                     fontSize: 11,
                     fontWeight: active ? FontWeight.w500 : FontWeight.w300,
                   ),
@@ -753,12 +752,13 @@ class _ReschedulePageState extends State<ReschedulePage>
                     children: [
                       Container(
                         width: double.infinity,
-                        color: primaryColor,
-                        padding: const EdgeInsets.only(
-                          top: 6,
-                          bottom: 8,
-                        ),
+                        color: const Color(0xffF8F6F0),
+                        padding: const EdgeInsets.only(bottom: 8),
                         child: _progressIndicator(currentStep),
+                      ),
+                      Divider(
+                        height: 1,
+                        color: primaryColor.withValues(alpha: 0.07),
                       ),
                       Expanded(
                         child: RefreshIndicator(
