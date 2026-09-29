@@ -1115,6 +1115,36 @@ class _ReschedulePageState extends State<ReschedulePage>
                                         ),
                                       );
                                     },
+                                    todayBuilder:
+                                        (context, day, focusedDay) {
+                                      final color =
+                                          day.weekday == DateTime.sunday
+                                              ? Colors.redAccent
+                                              : day.weekday ==
+                                                      DateTime.saturday
+                                                  ? Colors.blueAccent
+                                                  : primaryColor;
+                                      return Center(
+                                        child: Container(
+                                          width: 38,
+                                          height: 38,
+                                          alignment: Alignment.center,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xffE7EFE4),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Text(
+                                            '${day.day}',
+                                            style:
+                                                forestringTextStyle.copyWith(
+                                              color: color,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     outsideBuilder:
                                         (context, day, focusedDay) {
                                       final color =
