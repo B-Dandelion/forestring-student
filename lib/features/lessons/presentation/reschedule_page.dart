@@ -278,12 +278,16 @@ class _ReschedulePageState extends State<ReschedulePage> {
               ),
               actionsAlignment: MainAxisAlignment.spaceBetween,
               actions: [
-                TextButton(
+                FilledButton(
                   onPressed: () => Navigator.pop(dialogContext, true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
                   child: Text(
                     '예약',
                     style: forestringTextStyle.copyWith(
-                      color: primaryColor,
+                      color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
