@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -60,6 +61,11 @@ class ForestringStudent extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: '포레스트링 수강생',
       theme: buildForestringTheme(),
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: const AppGate(),
     );
   }
@@ -77,6 +83,11 @@ class _StartupFailureApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: buildForestringTheme(),
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: Scaffold(
         backgroundColor: primaryColor,
         body: SafeArea(
