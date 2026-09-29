@@ -91,24 +91,7 @@ class _StudentMyPageState extends State<StudentMyPage> {
           IconButton(
             tooltip: '알림',
             onPressed: _showNotificationNotice,
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.notifications_none_rounded),
-                Positioned(
-                  top: 1,
-                  right: 0,
-                  child: Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            icon: const Icon(Icons.notifications_none_rounded),
           ),
           const SizedBox(width: 6),
         ],
@@ -356,21 +339,21 @@ class _StudentMyPageState extends State<StudentMyPage> {
         child: Stack(
           children: [
             Positioned(
-              right: -18,
-              top: -18,
+              right: -22,
+              top: -20,
               child: Icon(
                 Icons.music_note_rounded,
-                color: Colors.white.withValues(alpha: 0.08),
-                size: 150,
+                color: Colors.white.withValues(alpha: 0.07),
+                size: 148,
               ),
             ),
             Positioned(
-              right: 24,
-              top: 24,
+              right: 22,
+              bottom: 18,
               child: Icon(
                 Icons.eco_rounded,
-                color: Colors.white.withValues(alpha: 0.20),
-                size: 32,
+                color: Colors.white.withValues(alpha: 0.14),
+                size: 28,
               ),
             ),
             Padding(
