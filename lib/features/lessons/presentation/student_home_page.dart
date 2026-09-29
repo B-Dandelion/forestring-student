@@ -217,6 +217,22 @@ class _StudentHomePageState extends State<StudentHomePage> {
             ),
           );
         },
+        defaultBuilder: (context, day, focusedDay) {
+          final color = day.weekday == DateTime.sunday
+              ? Colors.redAccent
+              : day.weekday == DateTime.saturday
+                  ? Colors.blueAccent
+                  : Colors.black87;
+          return Center(
+            child: Text(
+              '${day.day}',
+              style: forestringTextStyle.copyWith(
+                color: color,
+                fontSize: 14,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
