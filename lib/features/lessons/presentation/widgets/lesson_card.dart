@@ -16,98 +16,141 @@ class StudentLessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          color: primaryColor.withValues(alpha: 0.18),
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
+    final badge = lesson.changeBadgeLabel;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 58,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: lesson.isCanceled
-                      ? Colors.black12
-                      : primaryColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      '${lesson.startsAt.month}월',
-                      style: forestringTextStyle.copyWith(fontSize: 12),
-                    ),
-                    Text(
-                      '${lesson.startsAt.day}',
-                      style: forestringTextStyle.copyWith(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: primaryColor.withValues(alpha: 0.08),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              const SizedBox(width: 14),
-              Expanded(
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 58,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${lesson.teacherName ?? '담당 선생님'} 선생님',
+                      DateFormat('HH:mm').format(lesson.startsAt),
                       style: forestringTextStyle.copyWith(
-                        fontSize: 16,
+                        color: primaryColor,
+                        fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        decoration: lesson.isCanceled
-                            ? TextDecoration.lineThrough
-                            : null,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      '${DateFormat('HH:mm').format(lesson.startsAt)} '
-                      '~ ${DateFormat('HH:mm').format(lesson.endsAt)} '
-                      '· ${lesson.displayTypeLabel}',
+                      DateFormat('HH:mm').format(lesson.endsAt),
                       style: forestringTextStyle.copyWith(
-                        fontSize: 13,
-                        color: Colors.black54,
+                        color: Colors.black38,
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (lesson.isCanceled)
-                Text(
-                  '취소',
-                  style: forestringTextStyle.copyWith(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.w500,
+              Container(
+                width: 1,
+                height: 46,
+                margin: const EdgeInsets.symmetric(horizontal: 14),
+                color: primaryColor.withValues(alpha: 0.10),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            '${lesson.teacherName ?? '담당 선생님'} 선생님',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: forestringTextStyle.copyWith(
+                              color: Colors.black87,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        if (badge != null) ...[
+                          const SizedBox(width: 7),
+                          _badge(
+                            badge,
+                            lesson.isStudentRebooked
+                                ? secondaryColor
+                                : primaryColor,
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      lesson.displayTypeLabel,
+                      style: forestringTextStyle.copyWith(
+                        color: Colors.black45,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 10),
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: const Color(0xffF3F6EF),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: primaryColor.withValues(alpha: 0.06),
+                    ),
                   ),
-                )
-              else if (lesson.isRescheduled)
-                Text(
-                  '재예약',
-                  style: forestringTextStyle.copyWith(
-                    color: secondaryColor,
-                    fontWeight: FontWeight.w500,
+                  child: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: primaryColor,
+                    size: 20,
                   ),
                 ),
-              if (onTap != null)
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.black38,
-                ),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _badge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: forestringTextStyle.copyWith(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
