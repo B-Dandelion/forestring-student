@@ -45,7 +45,9 @@ app.*.map.json
 /android/app/release
 
 # Local environment config
-env/dev.json
+env/*.json
+!env/example.json
+!env/*.example.json
 
 # Local Android native build artifacts
 .cxx/

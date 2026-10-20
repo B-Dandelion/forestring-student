@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/B-Dandelion/Forestring_teach">Teacher App</a>
+  <a href="https://github.com/B-Dandelion/forestring-teacher">Teacher App</a>
+  ·
+  <a href="https://b-dandelion.github.io/portfolio/forestring.html">Case Study</a>
   ·
   Current release: <code>v3.1.0</code>
 </p>
@@ -25,35 +27,45 @@ Teacher App과 동일한 Supabase 데이터를 사용하며, 수강생에게 필
 > **1인 개발 · 실제 운영 서비스**  
 > Teacher App과 같은 운영 데이터 및 수업 규칙을 공유하며 Android / iOS 앱으로 배포·운영하고 있습니다.
 
+### At a glance
+
+| | |
+| --- | --- |
+| 첫 출시 | 2024-10-22 |
+| 운영 범위 | 바이올린 학원 지점 2곳 |
+| 누적 수강생 | 96명 (현재 재원 43명) |
+| 수업 기록 | 3,690건 (진행 완료 2,339건 · 보강 175건 · 취소 198건) |
+
+<sub>2026-10-20 운영 DB 기준. 앱 심사용·QA 계정은 제외했고, 수업 기록은 Firebase에서 이관한 2025-03 이후 데이터를 포함합니다.</sub>
+
+설계 판단과 운영 중 장애를 추적한 과정은 [포트폴리오 프로젝트 사례](https://b-dandelion.github.io/portfolio/forestring.html)에 정리했습니다.
+
 ## Key Features
 
 - 수강생 로그인
-- 월간 수업 일정 조회
-- 수업 상세 확인
-- 취소 가능한 수업의 직접 취소
-- 취소 후 반환된 수업권 확인
-- 반환 수업권을 이용한 보강 일정 재예약
-- 학기별 수업 이력 조회
-- 마이페이지 및 사용자 정보 확인
+- 수업권 선택 → 날짜 선택 → 시간 선택 순서의 수업 예약
+- 강사 근무시간과 기존 수업을 반영한 예약 가능 시간 표시
+- 월간 수업 일정 조회와 수업 상세 확인
+- 취소 가능한 수업의 직접 취소와 수업권 반환
+- 반환된 수업권을 이용한 보강 재예약
+- 마이페이지: 이번 학기 예약 수업, 남은 수업권, 취소 가능 횟수, 보강 수업권
+- 원래 일정 → 취소 → 재예약으로 이어지는 학기별 수업 이력
 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/student_01_schedule.png" width="30%" alt="정규 수업 일정" />
-  <img src="docs/student_02_makeup.png" width="30%" alt="보강 수업 일정" />
-  <img src="docs/student_03_rebooking.png" width="30%" alt="수업 재예약" />
+  <img src="docs/screenshots/booking-date.webp" width="23%" alt="수업권을 고르고 예약할 날짜를 선택하는 화면" />
+  <img src="docs/screenshots/booking-confirm.webp" width="23%" alt="예약 가능한 시간 중 하나를 고르고 예약을 확인하는 화면" />
+  <img src="docs/screenshots/mypage.webp" width="23%" alt="이번 학기 예약 수업, 남은 수업권, 취소 가능 횟수를 보여주는 마이페이지" />
+  <img src="docs/screenshots/lesson-history.webp" width="23%" alt="원래 일정, 취소, 재예약 이력이 시간순으로 표시된 수업 내역" />
 </p>
 
 <p align="center">
-  <b>정규 수업 일정</b> · <b>보강 수업 일정</b> · <b>수업 재예약</b>
+  <b>수업권 · 날짜 선택</b> · <b>예약 가능 시간</b> · <b>마이페이지</b> · <b>수업 이력</b>
 </p>
 
 <p align="center">
-  <img src="docs/student_04_history.png" width="30%" alt="학기별 수강 내역" />
-</p>
-
-<p align="center">
-  <b>학기별 수강 내역</b>
+  <sub>앱 심사용 계정으로 촬영한 현행 화면입니다. 화면에 보이는 이름은 모두 가명이며, 실제 수강생 정보는 포함하지 않았습니다.</sub>
 </p>
 
 ## Main Flow
@@ -143,16 +155,16 @@ flutter analyze
 flutter run --dart-define-from-file=env/dev.json
 ```
 
-릴리즈 빌드 예시:
+릴리즈 빌드는 로컬의 `env/prod.json`을 사용합니다. 운영 환경 파일은 저장소에 커밋하지 않습니다.
 
 ```bash
-flutter build appbundle --release --dart-define-from-file=env/dev.json
-flutter build ipa --release --dart-define-from-file=env/dev.json
+flutter build appbundle --release --dart-define-from-file=env/prod.json
+flutter build ipa --release --dart-define-from-file=env/prod.json
 ```
 
 ## Related Project
 
-- [포레스트링 Teacher](https://github.com/B-Dandelion/Forestring_teach) — 선생님 / 지점장 / 마스터용 수업 운영·관리 앱 및 Supabase 백엔드
+- [포레스트링 Teacher](https://github.com/B-Dandelion/forestring-teacher) — 선생님 / 지점장 / 마스터용 수업 운영·관리 앱 및 Supabase 백엔드
 
 ## Notes
 
